@@ -14,27 +14,27 @@ ansible --version
 # # @link https://docs.docker.com/engine/installation/linux/ubuntulinux/
 # #
 
-# sudo apt-get update
-# dpkg -l | grep linux-image-extra-$(uname -r) || {
-#     sudo apt-get install -y linux-image-extra-$(uname -r)
-#     echo "Please restart virtual machine and run vagrant provision in order to continue with installer."
-#     exit 1
-# }
+sudo apt-get update
+dpkg -l | grep linux-image-extra-$(uname -r) || {
+    sudo apt-get install -y linux-image-extra-$(uname -r)
+    echo "Please restart virtual machine and run vagrant provision in order to continue with installer."
+    exit 1
+}
 
-# sudo apt-get install -y apt-transport-https ca-certificates bridge-utils
-# sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-# lsb_release -a | grep Release | grep 14 && {
-#     sudo echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" > /etc/apt/sources.list.d/docker.list
-# }
-# lsb_release -a | grep Release | grep 16 && {
-#     sudo echo "deb https://apt.dockerproject.org/repo ubuntu-xenial main" > /etc/apt/sources.list.d/docker.list
-# }
-# sudo apt-get purge -y lxc-docker || true
+sudo apt-get install -y apt-transport-https ca-certificates bridge-utils
+sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+lsb_release -a | grep Release | grep 14 && {
+    sudo echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" > /etc/apt/sources.list.d/docker.list
+}
+lsb_release -a | grep Release | grep 16 && {
+    sudo echo "deb https://apt.dockerproject.org/repo ubuntu-xenial main" > /etc/apt/sources.list.d/docker.list
+}
+sudo apt-get purge -y lxc-docker || true
 
-# sudo apt-get update
-# sudo apt-cache policy docker-engine
-# sudo apt-get install -y docker-engine
-# sudo service docker restart
+sudo apt-get update
+sudo apt-cache policy docker-engine
+sudo apt-get install -y docker-engine
+sudo service docker restart
 
 # # #
 # # # Install Kubernetes
