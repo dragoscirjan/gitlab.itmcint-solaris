@@ -52,6 +52,7 @@ cat /home/jenkins/.ssh/id_rsa.pub
 ```bash
 docker run --name jenkins --restart always \
     -p $((8000 + $(date +%d))):8080 \
+    -e JENKINS_INSTALL_PLUGINS='simple-theme-plugin publish-over-ssh'
     -v /home/jenkins:/var/jenkins_home \
     -d qubestash/jenkins:latest 
 ```
