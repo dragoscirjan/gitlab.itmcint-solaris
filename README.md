@@ -23,9 +23,7 @@ useradd jenkins -g jenkins -d /home/jenkins
 mkdir /home/jenkins
 chown -R jenkins:jenkins /home/jenkins
 
-mkdir -p /home/jenkins/.ssh
-chown -R jenkins:jenkins /home/jenkins
-sudo -H -u jenkkins bash -c 'ssh-keygen -b 2048 -t rsa -f /home/jenkins/.ssh/id_rsa -q -N ""'
+sudo -H -u jenkkins bash -c 'mkdir -p /home/jenkins/.ssh; ssh-keygen -b 2048 -t rsa -f /home/jenkins/.ssh/id_rsa -q -N ""'
 cat /home/jenkins/.ssh/id_rsa.pub
 ```
 
