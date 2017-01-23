@@ -22,9 +22,11 @@ apt-get install openssh-server
 
 #### Preparing for Jenkins
 
+> Use the public key to setup Jenkins SSH connection
+
 ```bash
 ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
-cat /root/.ssh/id_rsa.pub #use the public key to setup Jenkins SSH connection
+cat /root/.ssh/id_rsa.pub
 ```
 
 ## Standalone Containers
