@@ -20,6 +20,12 @@ deb http://mirror.manitu.net/ubuntu xenial-security main multiverse restricted u
 deb http://mirror.manitu.net/ubuntu xenial-backports main multiverse restricted universe
 ```
 
+#### Upgrade kernel to 4.4.0-57 or above
+
+```
+LINUX_VERSION=4.4.0-57 sh -c "apt-get install -y linux-image-\${LINUX_VERSION}-generic"
+```
+
 #### Installing Util tools
 
 ```bash
