@@ -19,9 +19,14 @@ You can find the project description in the the following [link](https://docs.go
 
 ```
 groupadd jenkins
-useradd jenkins
+useradd jenkins -g jenkins -d /home/jenkins
+mkdir /home/jenkins
+chown -R jenkins:jenkins /home/jenkins
 ```
 
 ```bash
-docker run --name jenkins --restart always -v /home/jenkins:/home/jenkins -d qubestash/jenkins:latest 
+docker run --name jenkins --restart always \
+    -p $((8000 + $(date +%d))):8080 \
+    -v /home/jenkins:/var/jenkins_home \
+    -d qubestash/jenkins:latest 
 ```
