@@ -11,6 +11,15 @@ You can find the project description in the the following [link](https://docs.go
 
 ### Preparing
 
+#### Configure /etc/apt/sources.list
+
+```bash
+deb http://mirror.manitu.net/ubuntu xenial main multiverse restricted universe
+deb http://mirror.manitu.net/ubuntu xenial-updates main multiverse restricted universe
+deb http://mirror.manitu.net/ubuntu xenial-security main multiverse restricted universe
+deb http://mirror.manitu.net/ubuntu xenial-backports main multiverse restricted universe
+```
+
 #### Installing Util tools
 
 ```bash
