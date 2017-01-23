@@ -24,6 +24,8 @@ mkdir /home/jenkins
 chown -R jenkins:jenkins /home/jenkins
 ```
 
+#### Running
+
 ```bash
 docker run --name jenkins --restart always \
     -p $((8000 + $(date +%d))):8080 \
