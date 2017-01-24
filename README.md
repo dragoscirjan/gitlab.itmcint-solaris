@@ -34,6 +34,9 @@ apt-get install openssh-server
 
 #### Installing QubeStash
 
+```bash
+wget -O - https://raw.githubusercontent.com/qubestash/stash/master/install-lxc.sh | bash
+```
 
 #### Preparing for Jenkins
 
@@ -58,8 +61,8 @@ useradd jenkins -g jenkins -d /home/jenkins
 mkdir /home/jenkins
 chown -R jenkins:jenkins /home/jenkins
 
-sudo -H -u jenkins bash -c 'mkdir -p /home/jenkins/.ssh; ssh-keygen -b 2048 -t rsa -f /home/jenkins/.ssh/id_rsa -q -N ""'
-cat /home/jenkins/.ssh/id_rsa.pub
+#sudo -H -u jenkins bash -c 'mkdir -p /home/jenkins/.ssh; ssh-keygen -b 2048 -t rsa -f /home/jenkins/.ssh/id_rsa -q -N ""'
+#cat /home/jenkins/.ssh/id_rsa.pub
 ```
 
 #### Running
