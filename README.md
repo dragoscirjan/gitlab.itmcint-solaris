@@ -47,9 +47,19 @@ ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
 cat /root/.ssh/id_rsa.pub
 ```
 
+### iptables (Port Forwarding)
+
+* http://www.netfilter.org/documentation/HOWTO/NAT-HOWTO.txt
+* https://www.digitalocean.com/community/tutorials/how-to-forward-ports-through-a-linux-gateway-with-iptables
+* http://www.systutorials.com/816/port-forwarding-using-iptables/
+* https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/4/html/Security_Guide/s1-firewall-ipt-fwd.html
+
 ## Standalone Containers
 
 ### Varnish
+
+* https://komelin.com/articles/https-varnish
+* https://www.digitalocean.com/community/tutorials/how-to-configure-varnish-cache-4-0-with-ssl-termination-on-ubuntu-14-04
 
 ### Jenkins
 
