@@ -56,8 +56,12 @@ sed -e "s/.*net.ipv4.ip_forward=.*/net.ipv4.ip_forward=1/g" -i /etc/sysctl.conf
 sysctl -p
 sysctl --system
 
+
+IF=ifext DEST=10.0.3.? iptables -t nat -A PREROUTING -i $IF -p tcp --dport 80 -j DNAT --to $DEST:80
+
 ```
 
+* https://www.computersnyou.com/3047/forward-port-lxc-container-quick-tip/
 * http://www.netfilter.org/documentation/HOWTO/NAT-HOWTO.txt
 * https://www.digitalocean.com/community/tutorials/how-to-forward-ports-through-a-linux-gateway-with-iptables
 * http://www.systutorials.com/816/port-forwarding-using-iptables/
