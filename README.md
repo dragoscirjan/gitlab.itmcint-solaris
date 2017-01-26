@@ -66,6 +66,7 @@ IF=ifext DEST=10.0.3.? iptables -t nat -A PREROUTING -i $IF -p tcp --dport 80 -j
 * https://www.digitalocean.com/community/tutorials/how-to-forward-ports-through-a-linux-gateway-with-iptables
 * http://www.systutorials.com/816/port-forwarding-using-iptables/
 * https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/4/html/Security_Guide/s1-firewall-ipt-fwd.html
+* https://www.cyberciti.biz/faq/how-to-iptables-delete-postrouting-rule/iptables-list-postrouting-rules/
 
 ## Standalone Containers
 
