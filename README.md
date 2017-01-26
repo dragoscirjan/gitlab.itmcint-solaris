@@ -49,6 +49,15 @@ cat /root/.ssh/id_rsa.pub
 
 ### iptables (Port Forwarding)
 
+```bash
+echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
+
+sed -e "s/.*net.ipv4.ip_forward=.*/net.ipv4.ip_forward=1/g" -i /etc/sysctl.conf
+sysctl -p
+sysctl --system
+
+```
+
 * http://www.netfilter.org/documentation/HOWTO/NAT-HOWTO.txt
 * https://www.digitalocean.com/community/tutorials/how-to-forward-ports-through-a-linux-gateway-with-iptables
 * http://www.systutorials.com/816/port-forwarding-using-iptables/
