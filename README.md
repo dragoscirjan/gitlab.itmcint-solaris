@@ -56,8 +56,12 @@ sed -e "s/.*net.ipv4.ip_forward=.*/net.ipv4.ip_forward=1/g" -i /etc/sysctl.conf
 sysctl -p
 sysctl --system
 
-
-IF=ifext DEST=10.0.3.? iptables -t nat -A PREROUTING -i $IF -p tcp --dport 80 -j DNAT --to $DEST:80
+# port forwarding port 80 to swarm master
+export IF=ifext; \
+	export TO_80=$(lxc-ls -f | grep qstashm | awk -F' ' '{print $5}' | cut -f1 -d','); \
+	iptables -t nat -D PREROUTING -i $IF -p tcp --dport 80 -j DNAT --to $TO_80:80 || true; \
+	iptables -t nat -A PREROUTING -i $IF -p tcp --dport 80 -j DNAT --to $TO_80:80; \
+    iptables -t nat -nL;
 
 ```
 
