@@ -64,7 +64,7 @@ ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
 cat /root/.ssh/id_rsa.pub
 ```
 
-### iptables (Port Forwarding)
+#### iptables (Port Forwarding)
 
 ```bash
 echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
@@ -73,6 +73,10 @@ sed -e "s/.*net.ipv4.ip_forward=.*/net.ipv4.ip_forward=1/g" -i /etc/sysctl.conf
 sysctl -p
 sysctl --system
 ```
+
+#### Configure NFS (if necessarry)
+
+> https://help.ubuntu.com/community/SettingUpNFSHowTo
 
 > iptables rules are handled by jenkins now
 
