@@ -1,6 +1,7 @@
 # Solaris Hosting Project
 
 * [Project Description](#project-description)
+* [Server Operating System](#server-operating-system) - prepare and config
 * [Standalone Containers](#)
   * [Varnish](#varnish) - Load Balancer & Cashing System
   * [Jenkins](#jenkins) - Continuous Integration
@@ -9,7 +10,9 @@
 
 You can find the project description in the the following [link](https://docs.google.com/document/d/1yIL9FuCW8ZtKg7DTPA2h2rI-LjoQJx7LS-whFkSfJkc). This document and repository, will only treat technical issues and running scripts.
 
-### Preparing
+## Server Operating System
+
+### Prepare
 
 #### Configure /etc/apt/sources.list
 
@@ -20,19 +23,33 @@ deb http://mirror.manitu.net/ubuntu xenial-security main multiverse restricted u
 deb http://mirror.manitu.net/ubuntu xenial-backports main multiverse restricted universe
 ```
 
+#### If Kernel RAID, check /etc/(mdadm/)mdadm.conf
+
+> For more details, check http://www.ducea.com/2009/03/08/mdadm-cheat-sheet/
+
+```bash
+
+cat /etc/mdadm/mdadm.conf # this is Ubuntu, adapt path to own distro
+mdadm --detail --scan
+
+# if these two output differ, run:
+mdadm --detail --scan >> /etc/mdadm.conf
+
+```
+
 #### Upgrade kernel to 4.4.0-57 or above
 
 ```
 LINUX_VERSION=4.4.0-57 sh -c "apt-get install -y linux-image-\${LINUX_VERSION}-generic"
 ```
 
-#### Installing Util tools
+#### Install Some Util Tools
 
 ```bash
-apt-get install openssh-server
+apt-get install openssh-server git
 ```
 
-#### Installing QubeStash
+#### Install QubeStash
 
 ```bash
 wget -O - https://raw.githubusercontent.com/qubestash/stash/master/install-lxc.sh | bash
