@@ -1,7 +1,10 @@
 # Solaris Hosting Project
 
 * [Project Description](#project-description)
-* [Server Operating System](#server-operating-system) - prepare and config
+* [Server Operating System](#server-operating-system)
+  * [Configure](#configure)
+    * [sources.list](#)
+    * [mdadm.conf](#mdamd-conf)
 * [Standalone Containers](#)
   * [Varnish](#varnish) - Load Balancer & Cashing System
   * [Jenkins](#jenkins) - Continuous Integration
@@ -23,7 +26,9 @@ deb http://mirror.manitu.net/ubuntu xenial-security main multiverse restricted u
 deb http://mirror.manitu.net/ubuntu xenial-backports main multiverse restricted universe
 ```
 
-#### If Kernel RAID, check /etc/(mdadm/)mdadm.conf
+#### mdadm.conf
+
+If Kernel RAID, check /etc/(mdadm/)mdadm.conf
 
 > For more details, check http://www.ducea.com/2009/03/08/mdadm-cheat-sheet/
 
