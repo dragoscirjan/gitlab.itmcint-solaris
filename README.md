@@ -12,7 +12,7 @@ You can find the project description in the the following [link](https://docs.go
 
 ## Server Operating System
 
-### Prepare
+### Configure
 
 #### Configure /etc/apt/sources.list
 
@@ -43,18 +43,6 @@ mdadm --detail --scan >> /etc/mdadm.conf
 LINUX_VERSION=4.4.0-57 sh -c "apt-get install -y linux-image-\${LINUX_VERSION}-generic"
 ```
 
-#### Install Some Util Tools
-
-```bash
-apt-get install openssh-server git
-```
-
-#### Install QubeStash
-
-```bash
-wget -O - https://raw.githubusercontent.com/qubestash/stash/master/install-lxc.sh | bash
-```
-
 #### Preparing for Jenkins
 
 > Use the public key to setup Jenkins SSH connection
@@ -74,10 +62,6 @@ sysctl -p
 sysctl --system
 ```
 
-#### Configure NFS (if necessarry)
-
-> https://help.ubuntu.com/community/SettingUpNFSHowTo
-
 > iptables rules are handled by jenkins now
 
 * https://www.computersnyou.com/3047/forward-port-lxc-container-quick-tip/
@@ -86,6 +70,25 @@ sysctl --system
 * http://www.systutorials.com/816/port-forwarding-using-iptables/
 * https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/4/html/Security_Guide/s1-firewall-ipt-fwd.html
 * https://www.cyberciti.biz/faq/how-to-iptables-delete-postrouting-rule/iptables-list-postrouting-rules/
+
+### Prepare
+
+
+#### Install Some Util Tools
+
+```bash
+apt-get install openssh-server git
+```
+
+#### Install QubeStash
+
+```bash
+wget -O - https://raw.githubusercontent.com/qubestash/stash/master/install-lxc.sh | bash
+```
+
+#### Configure NFS (if necessarry)
+
+> This section is handled by [Solaris Hosting Service - NFS](doc/nfs-install.md) article.
 
 ## Standalone Containers
 
