@@ -1,4 +1,3 @@
-
 # Solaris Hosting Service 
 
 > [back](../README.md)
@@ -15,10 +14,19 @@ For more details please read [NFS Server](https://help.ubuntu.com/community/Sett
 
 # 
 export NFS_CLIENT_IPS=""
+
+## Configure Access
+
 # Add the following line to /etc/hosts.deny:
 echo "rpcbind mountd nfsd statd lockd rquotad : ALL" >> /etc/hosts.deny
 # Now add the following line to /etc/hosts.allow:
 echo "rpcbind mountd nfsd statd lockd rquotad : $NFS_CLIENT_IPS" >> /etc/hosts.allow
+
+## Install tools
+
+which apt-get > /dev/null && {
+    apt-get install -y rpcbind nfs-kernel-server
+}
 
 ```
 
