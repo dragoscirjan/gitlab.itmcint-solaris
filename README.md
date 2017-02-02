@@ -45,7 +45,7 @@ mdadm --detail --scan >> /etc/mdadm.conf
 #### Upgrade kernel to 4.4.0-57 or above
 
 ```
-LINUX_VERSION=4.4.0-57 sh -c "apt-get install -y linux-image-\${LINUX_VERSION}-generic"
+LINUX_VERSION=4.4.0-57 sh -c "apt-get install -y linux-image-\${LINUX_VERSION}-generic linux-image-extra-\${LINUX_VERSION}-generic"
 ```
 
 #### Preparing for Jenkins
