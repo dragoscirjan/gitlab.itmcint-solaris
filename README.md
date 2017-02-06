@@ -3,8 +3,12 @@
 * [Project Description](#project-description)
 * [Server Operating System](#server-operating-system)
   * [Configure](#configure)
-    * [sources.list](#)
-    * [mdadm.conf](#mdamd-conf)
+    * [sources.list](#sourceslist)
+    * [mdadm.conf](#mdamdconf)
+    * [Upgrade Kernel](#upgrade-kernel)
+    * [SSH Key](#ssh-key)
+    * [Port Forwarding](#port-forwarding)
+    * 
 * [Standalone Containers](#)
   * [Varnish](#varnish) - Load Balancer & Cashing System
   * [Jenkins](#jenkins) - Continuous Integration
@@ -17,7 +21,7 @@ You can find the project description in the the following [link](https://docs.go
 
 ### Configure
 
-#### Configure /etc/apt/sources.list
+#### sources.list
 
 ```bash
 deb http://mirror.manitu.net/ubuntu xenial main multiverse restricted universe
@@ -42,13 +46,15 @@ mdadm --detail --scan >> /etc/mdadm.conf
 
 ```
 
-#### Upgrade kernel to 4.4.0-57 or above
+#### Upgrade kernel
+
+ to 4.4.0-57 or above
 
 ```
 LINUX_VERSION=4.4.0-57 sh -c "apt-get install -y linux-image-\${LINUX_VERSION}-generic linux-image-extra-\${LINUX_VERSION}-generic"
 ```
 
-#### Preparing for Jenkins
+#### SSH Key
 
 > Use the public key to setup Jenkins SSH connection
 
@@ -57,7 +63,9 @@ ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
 cat /root/.ssh/id_rsa.pub
 ```
 
-#### iptables (Port Forwarding)
+#### Port Forwarding
+
+> Enable port forwarding. You'll be using containers which will need it.
 
 ```bash
 echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
