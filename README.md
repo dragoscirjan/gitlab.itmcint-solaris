@@ -9,6 +9,9 @@
     * [SSH Key](#ssh-key)
     * [Port Forwarding](#port-forwarding)
   * [Prepare](#prepare)
+    * [Utils](#utils)
+    * [QubeStash](#qubeStash)
+    * [NFS](#nfs)
 * [Standalone Containers](#)
   * [Varnish](#varnish) - Load Balancer & Cashing System
   * [Jenkins](#jenkins) - Continuous Integration
@@ -87,19 +90,19 @@ sysctl --system
 ### Prepare
 
 
-#### Install Some Util Tools
+#### Utils
 
 ```bash
 apt-get install openssh-server git
 ```
 
-#### Install QubeStash
+#### QubeStash
 
 ```bash
 wget -O - https://raw.githubusercontent.com/qubestash/stash/master/install-lxc.sh | bash
 ```
 
-#### Configure NFS (if necessarry)
+#### NFS
 
 > This section is handled by [Solaris Hosting Service - NFS](doc/nfs-install.md) article.
 
