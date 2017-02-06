@@ -14,7 +14,7 @@ For more details please read [NFS Server](https://help.ubuntu.com/community/Sett
 
 # 
 export NFS_CLIENT_IPS=""
-#export NFS_CLIENT_NETWORK=""
+# i.e. export NFS_CLIENT_IPS="$(host terra.itmcd.ro | cut -f4 -d' ')"
 
 ## Configure Access
 
@@ -63,7 +63,40 @@ Nobody-Group = nogroup
 
 ```bash
 
+##
+
+export NFS_SERVER_IP=""
+# i.e. export NFS_SERVER_IP="$(host terra.itmcd.ro | cut -f4 -d' ')"
+
+## Install necesary packages
+
 which apt-get > /dev/null && {
-    apt-get install -y nfs-common
+    apt-get install -y rpcbind nfs-common
 }
+
+## Manage hosts.deny
+
+echo "rpcbind : ALL" >> /etc/hosts.deny
+
+## Manage hosts.allow
+
+echo "rpcbind : $NFS_SERVER_IP" >> /etc/hosts.allow
+
+## Prepare your mount folder
+
+mkdir -p /home/exports
+
+## Test mounting 
+
+mount $NFS_SERVER_IP:/home /home/exports && ls -la
+
+## Umount and 
+
+umount /home/exports
+
+## Prepare /etc/fstab
+ 
+echo "$NFS_SERVER_IP:home /home/export nfs rw,hard,intr 0 0" >> /etc/fstab
+mount -a
+
 ```
