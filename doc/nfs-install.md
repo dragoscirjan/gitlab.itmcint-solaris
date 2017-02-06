@@ -47,7 +47,9 @@ service nfs-kernel-server restart
 
 #### /etc/idmapd.conf
 
-Edit `/etc/idmapd.conf` to look like this.
+Edit `/etc/idmapd.conf` to look like this. 
+
+> Please note there may be different nobody/nogroup users for different distros. Please read the documentation.
 
 ```
 [Mapping]
@@ -57,3 +59,11 @@ Nobody-Group = nogroup
 ```
 
 ### Installing NFS Client
+
+
+```bash
+
+which apt-get > /dev/null && {
+    apt-get install -y nfs-common
+}
+```
