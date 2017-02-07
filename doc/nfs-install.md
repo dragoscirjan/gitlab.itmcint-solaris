@@ -80,7 +80,7 @@ echo "rpcbind : ALL" >> /etc/hosts.deny
 
 ## Manage hosts.allow
 
-echo "rpcbind : $NFS_SERVER_IP" >> /etc/hosts.allow
+echo "rpcbind : $NFS_SERVER_IP 127.0.0.1" >> /etc/hosts.allow
 
 ## Prepare your mount folder
 
