@@ -4,7 +4,11 @@
 
 ## Installing NFS
 
-Inspired from [Ubuntu Community Help](https://help.ubuntu.com) [Setting Up NFS How To](https://help.ubuntu.com/community/SettingUpNFSHowTo)
+> Inspired from [Ubuntu Community Help](https://help.ubuntu.com) [Setting Up NFS How To](https://help.ubuntu.com/community/SettingUpNFSHowTo)
+
+> Explained caching in [RHEL Storage_Administration_Guide](https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Storage_Administration_Guide/fscachenfs.html) and [Understanding NFS Caching](https://www.avidandrew.com/understanding-nfs-caching.html).
+
+> 
 
 ### Configuring NFS Server
 
