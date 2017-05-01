@@ -136,3 +136,17 @@ docker run --name jenkins --restart always \
     -v /home/jenkins:/var/jenkins_home \
     -d qubestash/jenkins:latest 
 ```
+
+
+### Running Swarm
+
+```bash
+# Starting Master
+QSTASH_CLUSTER=swarm QSTASH_NETWORK=10.0.3 QSTASH_PROVIDER=lxc vagrant up qstashmw1 --provider lxc
+# Copy the generated token in the .token file
+cat "..." > .token
+# Starting Workers
+for i in {2..3}; do QSTASH_MASTER_TOKEN=$(cat .token) QSTASH_CLUSTER=swarm QSTASH_NETWORK=10.0.3 \
+    QSTASH_MASTER_IP=$(lxc-ls -f | grep 10 | awk -F' ' '{print $5}' | cut -f1 -d',') \
+    QSTASH_PROVIDER=lxc vagrant up qstashmw$i --provider lxc; done
+```
