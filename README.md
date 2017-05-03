@@ -113,7 +113,7 @@ wget -O - https://raw.githubusercontent.com/qubestash/stash/master/install-lxc.s
 * https://komelin.com/articles/https-varnish
 * https://www.digitalocean.com/community/tutorials/how-to-configure-varnish-cache-4-0-with-ssl-termination-on-ubuntu-14-04
 
-# Running Jenkins
+# Running Jenkins & Registry
 
 ```bash
 git clone https://gitlab.com/dragos.cirjan/solaris.git /opt/solaris
@@ -123,18 +123,6 @@ vagrant up --provider lxc
 # add the following to /etc/crontab
 # 0  0    * * *   root    bash /opt/solaris/run.sh
 ```
-
-
-#### Running
-
-```bash
-docker run --name jenkins --restart always \
-    -p $((8000 + $(date +%d))):8080 \
-    -e JENKINS_INSTALL_PLUGINS='simple-theme-plugin publish-over-ssh'
-    -v /home/jenkins:/var/jenkins_home \
-    -d qubestash/jenkins:latest 
-```
-
 
 ### Running Swarm
 
