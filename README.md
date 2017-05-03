@@ -113,19 +113,14 @@ wget -O - https://raw.githubusercontent.com/qubestash/stash/master/install-lxc.s
 * https://komelin.com/articles/https-varnish
 * https://www.digitalocean.com/community/tutorials/how-to-configure-varnish-cache-4-0-with-ssl-termination-on-ubuntu-14-04
 
-### Jenkins
+# Running Jenkins
 
-#### Preparing
+git clone https://gitlab.com/dragos.cirjan/solaris.git /opt/solaris
+cd /opt/solaris
+vagrant up --provider lxc
 
-```
-groupadd jenkins
-useradd jenkins -g jenkins -d /home/jenkins
-mkdir /home/jenkins
-chown -R jenkins:jenkins /home/jenkins
+## Porting Jenkins to external
 
-#sudo -H -u jenkins bash -c 'mkdir -p /home/jenkins/.ssh; ssh-keygen -b 2048 -t rsa -f /home/jenkins/.ssh/id_rsa -q -N ""'
-#cat /home/jenkins/.ssh/id_rsa.pub
-```
 
 #### Running
 
@@ -150,3 +145,4 @@ for i in {2..3}; do QSTASH_MASTER_TOKEN=$(cat .token) QSTASH_CLUSTER=swarm QSTAS
     QSTASH_MASTER_IP=$(lxc-ls -f | grep 10 | awk -F' ' '{print $5}' | cut -f1 -d',') \
     QSTASH_PROVIDER=lxc vagrant up qstashmw$i --provider lxc; done
 ```
+
