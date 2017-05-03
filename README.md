@@ -115,11 +115,14 @@ wget -O - https://raw.githubusercontent.com/qubestash/stash/master/install-lxc.s
 
 # Running Jenkins
 
+```bash
 git clone https://gitlab.com/dragos.cirjan/solaris.git /opt/solaris
 cd /opt/solaris
 vagrant up --provider lxc
 
-## Porting Jenkins to external
+# add the following to /etc/crontab
+# 0  0    * * *   root    bash /opt/solaris/run.sh
+```
 
 
 #### Running

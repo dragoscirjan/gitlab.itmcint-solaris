@@ -21,11 +21,16 @@ docker ps -a | grep jenkins && {
   docker ps -a | grep jenkins | cut -f1 -d' ' | xargs docker rm -f || echo
 }
 
+JENKINS_HOME="/vagrant/.run/jenkins"
+if [ "$(hostname)" != "vagrant-base-xenial-amd64" ]; then
+    JENKINS_HOME="/opt/solaris/.run/jenkins"
+fi
+
 # docker run \
 docker run -p $((8000 + $(date +%d))):8080 \
   --restart=always \
   -e JENKINS_INSTALL_PLUGINS='simple-theme-plugin publish-over-ssh' \
-  -v /vagrant/.run/jenkins:/var/jenkins_home \
+  -v :/var/jenkins_home \
   --name jenkins -d qubestash/jenkins:latest
 
 # docker ps -a | grep nginx && {
