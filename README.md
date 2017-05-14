@@ -137,3 +137,34 @@ for i in {2..3}; do QSTASH_MASTER_TOKEN=$(cat .token) QSTASH_CLUSTER=swarm QSTAS
     QSTASH_PROVIDER=lxc vagrant up qstashmw$i --provider lxc; done
 ```
 
+## Standalone Containers
+### Varnish
+### Jenkins
+
+#### Connecting Jenkins to Docker
+
+This [article](https://www.katacoda.com/courses/jenkins/build-docker-images) explains how to connect Docker with Jenkins.
+
+Also, according to [this article](http://stackoverflow.com/a/43539359) 
+(reffering this [issue](https://github.com/moby/moby/issues/25471)), on Ubuntu (16.04 LTS) with docker-ce (17.03.1~ce-0~ubuntu-xenial) do the following to make docker listen to a TCP port instead of sockets.
+
+Add a file `/etc/systemd/system/docker.service.d/override.conf` with the following content:
+
+```
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd
+```
+
+Add a file `/etc/docker/daemon.json` with the following content
+
+```json
+{
+    "hosts": [
+        "tcp://127.0.0.1:2375",
+        "tcp://127.17.0.1:2375"
+    ] 
+}
+```
+
+Reload (systemctl daemon-reload) and restart (systemctl restart docker.service) docker.

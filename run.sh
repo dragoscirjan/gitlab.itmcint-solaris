@@ -1,6 +1,8 @@
 #! /bin/bash
 set -xe 
 
+$PREFIX=solaris
+
 apt-get update && apt-get install -y wget
 which docker || wget -q -O - https://get.docker.com | bash
 
@@ -52,3 +54,8 @@ sleep 10
 
 docker stop jenkins
 docker start jenkins
+
+docker ps -a | grep $PREFIX-dind | xargs docker rm -f 
+
+# TODO: Create our own or find a more "secure" image
+docker run --privileged --name $PREFIX-dind -d benhall/dind-jenkins-agent
