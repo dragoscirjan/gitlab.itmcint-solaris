@@ -35,6 +35,7 @@ docker run -p $((8000 + $(date +%d) + $(date +%m))):8080 \
   --restart=always \
   -e JENKINS_INSTALL_PLUGINS='simple-theme-plugin publish-over-ssh' \
   -v $JENKINS_HOME:/var/jenkins_home \
+  -v /var/run/docker.sock:/run/docker.sock \
   --name jenkins -d qubestash/jenkins:latest
 
 # docker ps -a | grep nginx && {
