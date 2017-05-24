@@ -31,11 +31,13 @@ done
 
 cat <<VCL_CONFIG
 
+# $count hosts discovered
+
 # Define the director that determines how to distribute incoming requests.
 director default_director round-robin {
 VCL_CONFIG
 
-for i in 1..$count; do
+for i in {1..$count}; do
     echo "  { .backend = web$i; }"
 done
 
