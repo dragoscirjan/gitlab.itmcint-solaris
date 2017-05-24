@@ -14,14 +14,14 @@ cat <<VCL_CONFIG
 # Port 80 Backend Servers
 VCL_CONFIG
 
-count=0
+backend_count=0
 docker inspect --format='{{.Name}}-{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' \
     $(docker ps -a | grep global_nginx\. | cut -f1 -d' ') \
     | while read hostip; do
 
-        count=$((count + 1));
+        backend_count=$((backend_count + 1));
         cat <<VCL_CONFIG
-backend web1 {
+backend web$backend_count {
     .host = "$(echo $hostip | cut -f2 -d'-')"; # $(echo $hostip | cut -f1 -d'-') template
     # .probe = { .url = "/status.php"; .interval = 5s; .timeout = 1s; .window = 5;.threshold = 3; }
 }
@@ -37,7 +37,7 @@ cat <<VCL_CONFIG
 director default_director round-robin {
 VCL_CONFIG
 
-for (( i=1 ; i<=$count; i++ )); do
+for (( i=1 ; i<=$backend_count; i++ )); do
     echo "  { .backend = web$i; }"
 done
 
