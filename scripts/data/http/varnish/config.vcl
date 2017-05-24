@@ -1,3 +1,38 @@
+vcl 4.0;
+import directors;    # load the directors
+
+# Define the list of backends (web servers).
+backend web1 {
+    .host = "172.17.0.4"; # /global_nginx.1.yfev7rzmu1hktj8elccdh8vy1 automated discovery
+    .port = "80";
+    .probe = {
+        .url = "/";
+        .timeout = 1s;
+        .interval = 5s;
+        .window = 5;
+        .threshold = 3;
+    }
+}
+backend web2 {
+    .host = "172.17.0.3"; # /global_nginx.2.smavsg40x096qqnm0vshtcw1e automated discovery
+    .port = "80";
+    .probe = {
+        .url = "/";
+        .timeout = 1s;
+        .interval = 5s;
+        .window = 5;
+        .threshold = 3;
+    }
+}
+
+# 2 hosts discovered
+
+# Define the director that determines how to distribute incoming requests.
+sub vcl_init {
+    new bar = directors.round_robin();
+    bar.add_backend(web1);
+    bar.add_backend(web2);
+}
 
 # Respond to incoming requests.
 sub vcl_recv {

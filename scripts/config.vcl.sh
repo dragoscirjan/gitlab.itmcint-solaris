@@ -10,8 +10,10 @@ HERE="`dirname "$WRAPPER"`"
 # @link https://www.lullabot.com/articles/configuring-varnish-for-highavailability-with-multiple-web-servers
 
 cat <<VCL_CONFIG
+vcl 4.0;
+import directors;    # load the directors
+
 # Define the list of backends (web servers).
-# Port 80 Backend Servers
 VCL_CONFIG
 
 docker-ip() {
@@ -27,7 +29,14 @@ docker-ip | while read hostip; do
 	cat <<VCL_CONFIG
 backend web$i {
     .host = "$(echo $hostip | cut -f2 -d'-')"; # $(echo $hostip | cut -f1 -d'-') automated discovery
-    # .probe = { .url = "/status.php"; .interval = 5s; .timeout = 1s; .window = 5;.threshold = 3; }
+    .port = "80";
+    .probe = {
+        .url = "/";
+        .timeout = 1s;
+        .interval = 5s;
+        .window = 5;
+        .threshold = 3;
+    }
 }
 VCL_CONFIG
 	i=$((i+1))
@@ -39,11 +48,12 @@ cat <<VCL_CONFIG
 # $hosts_count hosts discovered
 
 # Define the director that determines how to distribute incoming requests.
-director default_director round-robin {
+sub vcl_init {
+    new bar = directors.round_robin();
 VCL_CONFIG
 
 for (( i=1 ; i<=$hosts_count; i++ )); do
-    echo "  { .backend = web$i; }"
+    echo "    bar.add_backend(web$i);"
 done
 
 cat <<VCL_CONFIG

@@ -1,4 +1,5 @@
-set -xe;
+#! /bin/sh
+set -xe
 
 export WRAPPER="`readlink -f "$0"`"
 HERE="`dirname "$WRAPPER"`"
@@ -9,21 +10,22 @@ HERE="`dirname "$WRAPPER"`"
 # @link https://docs.docker.com/engine/reference/commandline/service_inspect/
 #
 
-export DOCKER_SERVICE_NAME="global_varnish-cache";
-export DOCKER_HOSTNAME="varnish.local";
+DOCKER_SERVICE_NAME=${DOCKER_SERVICE_NAME:-global_nginx};
+DOCKER_HOSTNAME=${DOCKER_HOSTNAME:-nginx.local};
 
-export DOCKER_LOG_OPTIONS="--log-driver json-file --log-opt max-size=10m --log-opt max-file=3";
-export DOCKER_IMAGE="qubestash/varnish-cache:alpine";
-export DOCKER_REPLICAS=1;
+DOCKER_LOG_OPTIONS=${DOCKER_LOG_OPTIONS:- --log-driver json-file --log-opt max-size=10m --log-opt max-file=3};
+DOCKER_IMAGE=${DOCKER_IMAGE:-nginx:alpine};
+DOCKER_REPLICAS=${DOCKER_REPLICAS:-2};
 
-# export VCL_BACKEND_ADDRESS=`docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker ps -a | grep global_nginx\. | cut -f1 -d' ')`
+NGINX_HOME=${NGINX_HOME:-$HERE/data/http/nginx};
 
-VARNISH_HOME=/data/http/varnish
+#
+#
+#
 
-mkdir -p $VARNISH_HOME
-bash $HERE/config.vcl.sh > $VARNISH_HOME/config.vcl
+mkdir -p $NGINX_HOME;
 
-# docker service rm $DOCKER_SERVICE_NAME || true
+echo "$@" | grep --rm && docker service rm $DOCKER_SERVICE_NAME || true
 
 if docker service ls | grep $DOCKER_SERVICE_NAME; then
     docker service update \
@@ -31,15 +33,15 @@ if docker service ls | grep $DOCKER_SERVICE_NAME; then
         --replicas $DOCKER_REPLICAS \
         $DOCKER_SERVICE_NAME;
 else
+    # DOCKER_ADDITIONAL_START="--publish 80:80";
     docker service create \
         $DOCKER_LOG_OPTIONS \
+        $DOCKER_ADDITIONAL_START \
         --replicas $DOCKER_REPLICAS \
         --hostname $DOCKER_HOSTNAME \
-        --env VCL_USE_CONFIG=yes \
-        --mount type=bind,source=$VARNISH_HOME/config.vcl,destination=/etc/varnish/default.vcl \
-        --publish 80:80 \
+        --mount type=bind,source=$NGINX_HOME,destination=/etc/nginx/conf.d \
         --name $DOCKER_SERVICE_NAME $DOCKER_IMAGE;
-fi;
+fi
 
 sleep 20;
 
