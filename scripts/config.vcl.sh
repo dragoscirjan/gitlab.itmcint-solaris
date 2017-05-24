@@ -26,7 +26,7 @@ docker-ip | while read hostip; do
 
 	cat <<VCL_CONFIG
 backend web$i {
-    .host = "$(echo $hostip | cut -f2 -d'-')"; # $(echo $hostip | cut -f1 -d'-') template
+    .host = "$(echo $hostip | cut -f2 -d'-')"; # $(echo $hostip | cut -f1 -d'-') automated discovery
     # .probe = { .url = "/status.php"; .interval = 5s; .timeout = 1s; .window = 5;.threshold = 3; }
 }
 VCL_CONFIG

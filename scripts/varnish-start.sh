@@ -36,7 +36,7 @@ else
         --replicas $DOCKER_REPLICAS \
         --hostname $DOCKER_HOSTNAME \
         --env VCL_USE_CONFIG=yes \
-        --mount type=mount,source=$VARNISH_HOME/config.vcl;destination=/etc/varnish/default.vcl \
+        --mount type=bind,source=$VARNISH_HOME/config.vcl,destination=/etc/varnish/default.vcl \
         --publish 80:80 \
         --name $DOCKER_SERVICE_NAME $DOCKER_IMAGE;
 fi;
