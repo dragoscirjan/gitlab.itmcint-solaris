@@ -14,8 +14,13 @@ cat <<VCL_CONFIG
 # Port 80 Backend Servers
 VCL_CONFIG
 
-hosts=`docker inspect --format='{{.Name}}-{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker ps -a | grep global_nginx\. | cut -f1 -d' ')`;
-hosts_count=$(echo $hosts | wc -l);
+docker-ip() {
+    docker inspect --format='{{.Name}}-{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' \
+        $(docker ps -a | grep global_nginx\. | cut -f1 -d' ');
+}
+
+hosts=$(docker-ip);
+hosts_count=$(docker-ip | wc -l);
 i=1;
 
 echo $hosts | while read hostip; do
