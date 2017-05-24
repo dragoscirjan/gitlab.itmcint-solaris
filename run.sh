@@ -1,6 +1,8 @@
 #! /bin/bash
 set -xe 
 
+$PREFIX=solaris
+
 apt-get update && apt-get install -y wget
 which docker || wget -q -O - https://get.docker.com | bash
 
@@ -35,6 +37,7 @@ docker run -p $((8000 + $(date +%d) + $(date +%m))):8080 \
   --restart=always \
   -e JENKINS_INSTALL_PLUGINS='simple-theme-plugin publish-over-ssh' \
   -v $JENKINS_HOME:/var/jenkins_home \
+  -v /var/run/docker.sock:/run/docker.sock \
   --name jenkins -d qubestash/jenkins:latest
 
 # docker ps -a | grep nginx && {
@@ -51,3 +54,8 @@ sleep 10
 
 docker stop jenkins
 docker start jenkins
+
+docker ps -a | grep $PREFIX-dind | xargs docker rm -f 
+
+# TODO: Create our own or find a more "secure" image
+docker run --privileged --name $PREFIX-dind -d benhall/dind-jenkins-agent
