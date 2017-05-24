@@ -1,5 +1,6 @@
 # Solaris Hosting Project
 
+* [Notes](#notes)
 * [Project Description](#project-description)
 * [Server Operating System](#server-operating-system)
   * [Configure](#configure)
@@ -15,6 +16,15 @@
 * [Standalone Containers](#)
   * [Varnish](#varnish) - Load Balancer & Cashing System
   * [Jenkins](#jenkins) - Continuous Integration
+
+## Notes
+
+```bash
+# TERRA docker swarm init
+docker swarm join \
+    --token SWMTKN-1-0l198n162n0v758sl6jb0rq1o487b93wrn2fo5fyoypcs836oh-9e1pn0rn9hcx3j4c963dwschy \
+    89.238.65.88:2377
+```
 
 ## [Project Description](https://docs.google.com/document/d/1yIL9FuCW8ZtKg7DTPA2h2rI-LjoQJx7LS-whFkSfJkc)
 
