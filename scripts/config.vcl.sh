@@ -12,36 +12,27 @@ HERE="`dirname "$WRAPPER"`"
 cat <<VCL_CONFIG
 # Define the list of backends (web servers).
 # Port 80 Backend Servers
-backend web1 {
 VCL_CONFIG
 
 count=0
-docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' \
+docker inspect --format='{{.Name}}-{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' \
     $(docker ps -a | grep global_nginx\. | cut -f1 -d' ') \
     | while read hostip; do
 
-        echo "    .host = "$hostip"; # template";
-        count=$((count + 1))
+cat <<VCL_CONFIG
+backend web1 {
+    .host = "$(echo $hostip | cut -f2 -d'-')"; # $(echo $hostip | cut -f1 -d'-') template
+    # .probe = { .url = "/status.php"; .interval = 5s; .timeout = 1s; .window = 5;.threshold = 3; }
+}
+VCL_CONFIG
+
+        count=$((count + 1));
 done
 
 cat <<VCL_CONFIG
-    .host = "127.0.0.1"; # static
-#    .probe = { .url = "/status.php"; .interval = 5s; .timeout = 1s; .window = 5;.threshold = 3; }
-}
-
-#backend web2 { .host = "192.10.0.2"; .probe = { .url = "/status.php"; .interval = 5s; .timeout = 1s; .window = 5;.threshold = 3; }}
-
-# Port 443 Backend Servers for SSL
-# backend web1_ssl { 
-#     .host = "192.10.0.1"; 
-#     .port = "443"; 
-#     .probe = { .url = "/status.php"; .interval = 5s; .timeout = 1 s; .window = 5;.threshold = 3; }
-# }
-# backend web2_ssl { .host = "192.10.0.2"; .port = "443"; .probe = { .url = "/status.php"; .interval = 5s; .timeout = 1 s; .window = 5;.threshold = 3; }}
 
 # Define the director that determines how to distribute incoming requests.
 director default_director round-robin {
-#    { .backend = web1; }
 VCL_CONFIG
 
 for i in 1..$count; do
@@ -49,7 +40,6 @@ for i in 1..$count; do
 done
 
 cat <<VCL_CONFIG
-#  { .backend = web2; }
 }
 VCL_CONFIG
 
