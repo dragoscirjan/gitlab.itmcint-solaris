@@ -19,14 +19,14 @@ docker inspect --format='{{.Name}}-{{range .NetworkSettings.Networks}}{{.IPAddre
     $(docker ps -a | grep global_nginx\. | cut -f1 -d' ') \
     | while read hostip; do
 
-cat <<VCL_CONFIG
+        count=$((count + 1));
+        cat <<VCL_CONFIG
 backend web1 {
     .host = "$(echo $hostip | cut -f2 -d'-')"; # $(echo $hostip | cut -f1 -d'-') template
     # .probe = { .url = "/status.php"; .interval = 5s; .timeout = 1s; .window = 5;.threshold = 3; }
 }
 VCL_CONFIG
 
-        count=$((count + 1));
 done
 
 cat <<VCL_CONFIG
@@ -37,7 +37,7 @@ cat <<VCL_CONFIG
 director default_director round-robin {
 VCL_CONFIG
 
-for i in {1..$count}; do
+for (( i=1 ; i<=$count; i++ )); do
     echo "  { .backend = web$i; }"
 done
 
