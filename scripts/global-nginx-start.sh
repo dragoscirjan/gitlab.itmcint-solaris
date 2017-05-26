@@ -4,6 +4,8 @@ set -xe
 export WRAPPER="`readlink -f "$0"`"
 HERE="`dirname "$WRAPPER"`"
 
+. $HERE/_init.sh
+
 #
 # @link https://docs.docker.com/engine/reference/commandline/service_create/
 # @link https://docs.docker.com/engine/reference/commandline/service_update/
@@ -19,28 +21,35 @@ DOCKER_REPLICAS=${DOCKER_REPLICAS:-2};
 
 NGINX_HOME=${NGINX_HOME:-$HERE/data/http/nginx};
 
-#
-#
-#
-
 mkdir -p $NGINX_HOME;
 
-echo "$@" | grep --rm && docker service rm $DOCKER_SERVICE_NAME || true
+#
+# remove directive
+#
+if echo $* | grep "remove"; then
+    docker service rm $DOCKER_SERVICE_NAME
+fi
 
+#
+# create/update
+#
 if docker service ls | grep $DOCKER_SERVICE_NAME; then
     docker service update \
+        $ENV_UPDATE \
         --image $DOCKER_IMAGE \
         --replicas $DOCKER_REPLICAS \
         $DOCKER_SERVICE_NAME;
 else
-    # DOCKER_ADDITIONAL_START="--publish 80:80";
+    DOCKER_ADDITIONAL_START="--publish 80:80";
     docker service create \
-        $DOCKER_LOG_OPTIONS \
-        $DOCKER_ADDITIONAL_START \
-        --replicas $DOCKER_REPLICAS \
         --hostname $DOCKER_HOSTNAME \
         --mount type=bind,source=$NGINX_HOME,destination=/etc/nginx/conf.d \
-        --name $DOCKER_SERVICE_NAME $DOCKER_IMAGE;
+        --name $DOCKER_SERVICE_NAME \
+        --network web-network \
+        --replicas $DOCKER_REPLICAS \
+        $DOCKER_LOG_OPTIONS \
+        $DOCKER_ADDITIONAL_START \
+        $DOCKER_IMAGE;
 fi
 
 sleep 20;

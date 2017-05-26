@@ -1,3 +1,4 @@
+#! /bin/sh
 set -xe;
 
 export WRAPPER="`readlink -f "$0"`"
@@ -21,7 +22,7 @@ DOCKER_REPLICAS=${DOCKER_REPLICAS:-1};
 VARNISH_HOME=${VARNISH_HOME:-$HERE/data/http/varnish}
 
 mkdir -p $VARNISH_HOME
-bash $HERE/config.vcl.sh > $VARNISH_HOME/config.vcl
+bash $HERE/varnish.vcl.sh > $VARNISH_HOME/config.vcl
 
 echo "$@" | grep --rm && docker service rm $DOCKER_SERVICE_NAME || true
 

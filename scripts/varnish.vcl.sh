@@ -60,4 +60,4 @@ cat <<VCL_CONFIG
 }
 VCL_CONFIG
 
-cat $HERE/config.vcl
+cat $HERE/varnish.vcl

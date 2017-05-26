@@ -1,72 +1,120 @@
 #! /bin/sh
 set -xe;
 
+export WRAPPER="`readlink -f "$0"`"
+HERE="`dirname "$WRAPPER"`"
+
+. $HERE/_init.sh
+
 #
 # @link https://docs.docker.com/engine/reference/commandline/service_create/
 # @link https://docs.docker.com/engine/reference/commandline/service_update/
 # @link https://docs.docker.com/engine/reference/commandline/service_inspect/
 #
 
-export DOCKER_SERVICE_NAME="andreiruse_hypera";
-export DOCKER_HOSTNAME="hypera.global";
+DOCKER_SERVICE_NAME=${DOCKER_SERVICE_NAME:-wordpress}
+DOCKER_HOSTNAME=${DOCKER_HOSTNAME:-wordpress.local}
 
-export DOCKER_LOG_OPTIONS="--log-driver json-file --log-opt max-size=10m --log-opt max-file=3";
-export DOCKER_IMAGE="qubestash/wordpress:php-7.1.5-fpm-alpine";
-export DOCKER_REPLICAS=1;
+DOCKER_LOG_OPTIONS=${DOCKER_LOG_OPTIONS:- --log-driver json-file --log-opt max-size=10m --log-opt max-file=3}
+DOCKER_IMAGE=${DOCKER_IMAGE:-qubestash/wordpress:php-7.1.5-fpm-alpine}
+DOCKER_REPLICAS=${DOCKER_REPLICAS:-1}
 
-export WORDPRESS_MYSQL_DB=andreiruse_hypera;
-export WORDPRESS_MYSQL_USER=andreiruse;
-export WORDPRESS_MYSQL_PASS=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1);
-export WORDPRESS_MYSQL_HOST=mysql.global;
-export WORDPRESS_TABLE_PREFIX=wp;
-export WORDPRESS_PLUGINS="addthis authors all-in-one-seo-pack better-delete-revision fd-footnotes maintenance page-links-to php-code-widget pixelstats post-reading-time regenerate-thumbnails side-matter smtp-mailer ultimate-posts-widget widget-title-links woocommerce wp-pagenavi widget-logic wordpress-popular-posts wp-super-cache wp-user-avatar";
+MYSQL_HOME=${MYSQL_HOME:-$HERE/mysql}
+MYSQL_LIB_HOME=${MYSQL_LIB_HOME:-$HERE/mysql/lib}
 
-export WORDPRESS_HOME=/data/sites/$DOCKER_HOSTNAME;
+WORDPRESS_TLD=${WORDPRESS_TLD:-wordpress.local}
+
+WORDPRESS_MYSQL_DB=${WORDPRESS_MYSQL_DB:-database}
+WORDPRESS_MYSQL_USER=${WORDPRESS_MYSQL_USER:-user}
+WORDPRESS_MYSQL_PASS=${WORDPRESS_MYSQL_PASS:-pass}
+WORDPRESS_MYSQL_HOST=${WORDPRESS_MYSQL_HOST:-global_mysql}
+WORDPRESS_TABLE_PREFIX=${WORDPRESS_TABLE_PREFIX:-wp}
+# WORDPRESS_PLUGINS=${WORDPRESS_PLUGINS:-};
+
+docker-ip() {
+    docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' \
+        $(docker ps -a | grep $DOCKER_SERVICE_NAME\. | cut -f1 -d' ');
+}
+
+WORDPRESS_HOME=$HERE/data/sites/$DOCKER_HOSTNAME
+NGINX_HOME=$HERE/data/http/nginx
+
+###
+
+mkdir -p $WORDPRESS_HOME/wp-content/plugins $WORDPRESS_HOME/wp-content/themes $WORDPRESS_HOME/wp-content/uploads
 
 #
+# remove directive
 #
+if echo $* | grep "remove"; then
+    docker service rm $DOCKER_SERVICE_NAME
+    # docker service update \
+    #     --mount-remove type=volume,source=$DOCKER_SERVICE_NAME,destination=/usr/src/wordpress/$DOCKER_SERVICE_NAME \
+    #     global_nginx
+    # docker volume remove $DOCKER_SERVICE_NAME
+fi
+
 #
-
-mkdir -p $WORDPRESS_HOME;
-
+# create / update
+#
 if docker service ls | grep $DOCKER_SERVICE_NAME; then
     docker service update \
+        $ENV_UPDATE \
         --image $DOCKER_IMAGE \
         --replicas $DOCKER_REPLICAS \
-        $DOCKER_SERVICE_NAME;
+        $DOCKER_SERVICE_NAME
 else
-    echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
-    echo " mysql -u$WORDPRESS_MYSQL_USER \\ ";
-    echo "       -p$WORDPRESS_MYSQL_PASS \\ ";
-    echo "       -h$WORDPRESS_MYSQL_HOST ";
-    echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
 
-# https://wordpress.org/plugins/
-# addthis                   https://downloads.wordpress.org/plugin/addthis.5.3.5.zip
-# authors                   https://downloads.wordpress.org/plugin/authors.zip
-# page-links-to             https://downloads.wordpress.org/plugin/page-links-to.2.9.9.zip
-# post-reading-time         https://downloads.wordpress.org/plugin/post-reading-time.1.2.zip
-# smtp-mailer               https://downloads.wordpress.org/plugin/smtp-mailer.zip
-# widget-title-links        https://downloads.wordpress.org/plugin/widget-title-links.1.4.1.zip
-# wordpress-popular-posts   https://downloads.wordpress.org/plugin/wordpress-popular-posts.3.3.4.zip
+    docker volume create --name $DOCKER_SERVICE_NAME
 
     docker service create \
-        $DOCKER_LOG_OPTIONS \
-        --replicas $DOCKER_REPLICAS \
         --env WORDPRESS_MYSQL_DB=$WORDPRESS_MYSQL_DB \
         --env WORDPRESS_MYSQL_USER=$WORDPRESS_MYSQL_USER \
         --env WORDPRESS_MYSQL_PASS=$WORDPRESS_MYSQL_PASS \
         --env WORDPRESS_MYSQL_HOST=$WORDPRESS_MYSQL_HOST \
         --env WORDPRESS_TABLE_PREFIX=$WORDPRESS_TABLE_PREFIX \
         --env WORDPRESS_PLUGINS="$WORDPRESS_PLUGINS" \
+        --env SQL_1="mysql -u$WORDPRESS_MYSQL_USER -p$WORDPRESS_MYSQL_PASS -h$WORDPRESS_MYSQL_HOST" \
+        --env SQL_2="CREATE USER IF NOT EXISTS $WORDPRESS_MYSQL_USER@'%' IDENTIFIED BY '$WORDPRESS_MYSQL_PASS'" \
+        --env SQL_3="CREATE DATABASE IF NOT EXISTS $WORDPRESS_MYSQL_DB" \
+        --env SQL_4="GRANT ALL PRIVILEGES ON \`$WORDPRESS_MYSQL_DB\`.\`*\` TO '$WORDPRESS_MYSQL_USER'@'%'" \
         --hostname $DOCKER_HOSTNAME \
-        --mount type=bind,source=$WORDPRESS_HOME/wp-content/themes,destination=/usr/src/wordpress/wp-content/themes \
-        --name $DOCKER_SERVICE_NAME $DOCKER_IMAGE;
+        --name $DOCKER_SERVICE_NAME \
+        --network web-network \
+        --mount type=volume,source=$DOCKER_SERVICE_NAME,destination=/usr/src/wordpress \
+        --replicas $DOCKER_REPLICAS \
+        $DOCKER_LOG_OPTIONS \
+        $DOCKER_ADDITIONAL_START \
+        $DOCKER_IMAGE
+        # --mount type=bind,source=$WORDPRESS_HOME/wp-content/themes,destination=/usr/src/wordpress/wp-content/themes \
+        # --mount type=bind,source=$WORDPRESS_HOME/wp-content/uploads,destination=/usr/src/wordpress/wp-content/uploads \
+
+    docker service update \
+        --mount-add type=volume,source=$DOCKER_SERVICE_NAME,destination=/usr/src/wordpress/$DOCKER_SERVICE_NAME \
+        global_nginx
 fi;
 
+sleep 20
 
-sleep 20;
+docker service ls
+docker service inspect --pretty $DOCKER_SERVICE_NAME
+docker service ps $DOCKER_SERVICE_NAME
 
-docker service ls;
-docker service inspect --pretty $DOCKER_SERVICE_NAME;
-docker service ps $DOCKER_SERVICE_NAME;
+#
+# configure nginx host and notify nginx
+#
+cat $HERE/wordpress.conf \
+    | sed -e "s/wordpress.local/$WORDPRESS_TLD/g" \
+    | sed -e "s/php.local/$DOCKER_SERVICE_NAME/g" \
+    | sed -e "s/__ROOT__/\/usr\/src\/wordpress\/$DOCKER_SERVICE_NAME/g" \
+    > $NGINX_HOME/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
+    # | sed -e "s/php.local/$(docker-ip)/g" \
+    # | sed -e "s/\/usr\/src\/wordpress/\/usr\/src\/wordpress\/$DOCKER_SERVICE_NAME/g" \
+docker service update $ENV_UPDATE global_nginx
+
+sleep 20
+
+docker service ls
+docker service inspect --pretty $DOCKER_SERVICE_NAME
+docker service ps $DOCKER_SERVICE_NAME
+docker service ps global_nginx
