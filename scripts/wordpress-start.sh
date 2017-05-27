@@ -61,6 +61,8 @@ if docker service ls | grep $DOCKER_SERVICE_NAME; then
     docker service update \
         $ENV_UPDATE \
         --image $DOCKER_IMAGE \
+        --mount-add type=bind,source=$WORDPRESS_HOME/wp-content/themes,destination=/usr/src/wordpress/wp-content/themes \
+        --mount-add type=bind,source=$WORDPRESS_HOME/wp-content/uploads,destination=/usr/src/wordpress/wp-content/uploads \
         --replicas $DOCKER_REPLICAS \
         $DOCKER_SERVICE_NAME
 else
@@ -77,7 +79,7 @@ else
         --env SQL_1="mysql -u$WORDPRESS_MYSQL_USER -p$WORDPRESS_MYSQL_PASS -h$WORDPRESS_MYSQL_HOST" \
         --env SQL_2="CREATE USER IF NOT EXISTS $WORDPRESS_MYSQL_USER@'%' IDENTIFIED BY '$WORDPRESS_MYSQL_PASS'" \
         --env SQL_3="CREATE DATABASE IF NOT EXISTS $WORDPRESS_MYSQL_DB" \
-        --env SQL_4="GRANT ALL PRIVILEGES ON \`$WORDPRESS_MYSQL_DB\`.\`*\` TO '$WORDPRESS_MYSQL_USER'@'%'" \
+        --env SQL_4="GRANT ALL PRIVILEGES ON $WORDPRESS_MYSQL_DB.* TO '$WORDPRESS_MYSQL_USER'@'%'" \
         --hostname $DOCKER_HOSTNAME \
         --name $DOCKER_SERVICE_NAME \
         --network web-network \
