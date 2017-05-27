@@ -36,7 +36,7 @@ docker-ip() {
         $(docker ps -a | grep $DOCKER_SERVICE_NAME\. | cut -f1 -d' ');
 }
 
-WORDPRESS_HOME=$HERE/data/sites/$DOCKER_HOSTNAME
+WORDPRESS_HOME=${WORDPRESS_HOME:-$HERE/data/sites/$DOCKER_HOSTNAME}
 NGINX_HOME=$HERE/data/http/nginx
 
 ###
@@ -82,12 +82,12 @@ else
         --name $DOCKER_SERVICE_NAME \
         --network web-network \
         --mount type=volume,source=$DOCKER_SERVICE_NAME,destination=/usr/src/wordpress \
+        --mount type=bind,source=$WORDPRESS_HOME/wp-content/themes,destination=/usr/src/wordpress/wp-content/themes \
+        --mount type=bind,source=$WORDPRESS_HOME/wp-content/uploads,destination=/usr/src/wordpress/wp-content/uploads \
         --replicas $DOCKER_REPLICAS \
         $DOCKER_LOG_OPTIONS \
         $DOCKER_ADDITIONAL_START \
         $DOCKER_IMAGE
-        # --mount type=bind,source=$WORDPRESS_HOME/wp-content/themes,destination=/usr/src/wordpress/wp-content/themes \
-        # --mount type=bind,source=$WORDPRESS_HOME/wp-content/uploads,destination=/usr/src/wordpress/wp-content/uploads \
 
     docker service update \
         --mount-add type=volume,source=$DOCKER_SERVICE_NAME,destination=/usr/src/wordpress/$DOCKER_SERVICE_NAME \
