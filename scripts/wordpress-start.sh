@@ -74,19 +74,16 @@ wordpress::create(){
 }
 
 #
-# Update Wordpress Instance
+# Add Wordpress Instance Mounts to Nginx
 #
-wordpress::update(){
-    # update service
+wordpress::at-update::nginx(){
+    local soureWPContent=$WORDPRESS_HOME/wp-content
+    local destiWpContent=/usr/src/wordpress/$DOCKER_SERVICE_NAME
     docker service update \
-        $ENV_UPDATE \
-        --image $DOCKER_IMAGE \
-        --mount-add type=bind,source=$WORDPRESS_HOME/wp-content/themes,destination=/usr/src/wordpress/wp-content/themes \
-        --mount-add type=bind,source=$WORDPRESS_HOME/wp-content/uploads,destination=/usr/src/wordpress/wp-content/uploads \
-        --replicas $DOCKER_REPLICAS \
-        $DOCKER_SERVICE_NAME
-    # update nginx service
-    wordpress::at-update::nignx
+        --mount-add type=volume,source=$DOCKER_SERVICE_NAME,destination=$destiWpContent \
+        --mount-add type=bind,source=$soureWPContent/themes,destination=$destiWpContent/wp-content/themes \
+        --mount-add type=bind,source=$soureWPContent/uploads,destination=$destiWpContent/wp-content/uploads \
+        global_nginx
 }
 
 #
@@ -102,16 +99,19 @@ wordpress::remove(){
 }
 
 #
-# Add Wordpress Instance Mounts to Nginx
+# Update Wordpress Instance
 #
-wordpress::at-update::nginx(){
-    local soureWPContent=$WORDPRESS_HOME/wp-content
-    local destiWpContent=/usr/src/wordpress/$DOCKER_SERVICE_NAME
+wordpress::update(){
+    # update service
     docker service update \
-        --mount-add type=volume,source=$DOCKER_SERVICE_NAME,destination=$destiWpContent \
-        --mount-add type=bind,source=$soureWPContent/themes,destination=$destiWpContent/wp-content/themes \
-        --mount-add type=bind,source=$soureWPContent/uploads,destination=$destiWpContent/wp-content/uploads \
-        global_nginx
+        $ENV_UPDATE \
+        --image $DOCKER_IMAGE \
+        --mount-add type=bind,source=$WORDPRESS_HOME/wp-content/themes,destination=/usr/src/wordpress/wp-content/themes \
+        --mount-add type=bind,source=$WORDPRESS_HOME/wp-content/uploads,destination=/usr/src/wordpress/wp-content/uploads \
+        --replicas $DOCKER_REPLICAS \
+        $DOCKER_SERVICE_NAME
+    # update nginx service
+    wordpress::at-update::nginx
 }
 
 #
