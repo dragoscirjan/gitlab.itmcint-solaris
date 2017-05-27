@@ -136,7 +136,7 @@ fi
 # create / update
 #
 if docker service ls | grep $DOCKER_SERVICE_NAME; then
-    wordpress:update
+    wordpress::update
 else
     wordpress::create
     sleep 10
@@ -165,5 +165,6 @@ sleep 20
 
 docker service ls
 docker service inspect --pretty $DOCKER_SERVICE_NAME
+docker service inspect --pretty global_nginx
 docker service ps $DOCKER_SERVICE_NAME
 docker service ps global_nginx
