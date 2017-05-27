@@ -44,31 +44,12 @@ NGINX_HOME=${NGINX_HOME:-$HERE/data/http/nginx}
 mkdir -p $WORDPRESS_HOME/wp-content/plugins $WORDPRESS_HOME/wp-content/themes $WORDPRESS_HOME/wp-content/uploads
 
 #
-# remove directive
+# Start/Create Wordpress Instance
 #
-if echo $* | grep "remove"; then
-    docker service rm $DOCKER_SERVICE_NAME
-    # docker service update \
-    #     --mount-remove type=volume,source=$DOCKER_SERVICE_NAME,destination=/usr/src/wordpress/$DOCKER_SERVICE_NAME \
-    #     global_nginx
-    # docker volume remove $DOCKER_SERVICE_NAME
-fi
-
-#
-# create / update
-#
-if docker service ls | grep $DOCKER_SERVICE_NAME; then
-    docker service update \
-        $ENV_UPDATE \
-        --image $DOCKER_IMAGE \
-        --mount-add type=bind,source=$WORDPRESS_HOME/wp-content/themes,destination=/usr/src/wordpress/wp-content/themes \
-        --mount-add type=bind,source=$WORDPRESS_HOME/wp-content/uploads,destination=/usr/src/wordpress/wp-content/uploads \
-        --replicas $DOCKER_REPLICAS \
-        $DOCKER_SERVICE_NAME
-else
-
+wordpress::create(){
+    # create volume
     docker volume create --name $DOCKER_SERVICE_NAME
-
+    # create service
     docker service create \
         --env WORDPRESS_MYSQL_DB=$WORDPRESS_MYSQL_DB \
         --env WORDPRESS_MYSQL_USER=$WORDPRESS_MYSQL_USER \
@@ -90,10 +71,76 @@ else
         $DOCKER_LOG_OPTIONS \
         $DOCKER_ADDITIONAL_START \
         $DOCKER_IMAGE
+}
 
+#
+# Update Wordpress Instance
+#
+wordpress::update(){
+    # update service
     docker service update \
-        --mount-add type=volume,source=$DOCKER_SERVICE_NAME,destination=/usr/src/wordpress/$DOCKER_SERVICE_NAME \
+        $ENV_UPDATE \
+        --image $DOCKER_IMAGE \
+        --mount-add type=bind,source=$WORDPRESS_HOME/wp-content/themes,destination=/usr/src/wordpress/wp-content/themes \
+        --mount-add type=bind,source=$WORDPRESS_HOME/wp-content/uploads,destination=/usr/src/wordpress/wp-content/uploads \
+        --replicas $DOCKER_REPLICAS \
+        $DOCKER_SERVICE_NAME
+    # update nginx service
+    wordpress::at-update::nignx
+}
+
+#
+# Remove Wordpress Instance
+#
+wordpress::remove(){
+    # remove service
+    docker service rm $DOCKER_SERVICE_NAME
+    # update nginx service
+    wordpress::at-remove::nginx
+    # remove volume
+    docker volume rm $DOCKER_SERVICE_NAME
+}
+
+#
+# Add Wordpress Instance Mounts to Nginx
+#
+wordpress::at-update::nginx(){
+    local soureWPContent=$WORDPRESS_HOME/wp-content
+    local destiWpContent=/usr/src/wordpress/$DOCKER_SERVICE_NAME
+    docker service update \
+        --mount-add type=volume,source=$DOCKER_SERVICE_NAME,destination=$destiWpContent \
+        --mount-add type=bind,source=$soureWPContent/themes,destination=$destiWpContent/wp-content/themes \
+        --mount-add type=bind,source=$soureWPContent/uploads,destination=$destiWpContent/wp-content/uploads \
         global_nginx
+}
+
+#
+# Remove Wordpress Instance Mounts from Nginx
+#
+wordpress::at-remove::nginx(){
+    docker service update \
+        --mount-rm /usr/src/wordpress/$DOCKER_SERVICE_NAMEdestiWpContent/wp-content/themes \
+        --mount-rm /usr/src/wordpress/$DOCKER_SERVICE_NAME/wp-content/uploads \
+        --mount-rm /usr/src/wordpress/$DOCKER_SERVICE_NAME \
+        global_nginx   
+}
+
+#
+# remove directive
+#
+if echo $* | grep "remove"; then
+    wordpress::remove
+fi
+
+#
+# create / update
+#
+if docker service ls | grep $DOCKER_SERVICE_NAME; then
+    wordpress:update
+else
+    wordpress::create
+    sleep 10
+    wordpress::update
 fi;
 
 sleep 20
