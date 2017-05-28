@@ -38,9 +38,10 @@ if docker service ls | grep $DOCKER_SERVICE_NAME; then
         $ENV_UPDATE \
         --image $DOCKER_IMAGE \
         --replicas $DOCKER_REPLICAS \
+        $DOCKER_ADDITIONAL_UPDATE \
         $DOCKER_SERVICE_NAME;
 else
-    DOCKER_ADDITIONAL_START="--publish 80:80";
+    # DOCKER_ADDITIONAL_START="--publish 80:80";
     docker service create \
         --hostname $DOCKER_HOSTNAME \
         --mount type=bind,source=$NGINX_HOME,destination=/etc/nginx/conf.d \

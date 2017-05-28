@@ -26,12 +26,11 @@ bash $HERE/varnish.vcl.sh > $VARNISH_HOME/config.vcl
 
 echo "$@" | grep --rm && docker service rm $DOCKER_SERVICE_NAME || true
 
-if docker service ls | grep $DOCKER_SERVICE_NAME; then
-    docker service update \
-        --image $DOCKER_IMAGE \
-        --replicas $DOCKER_REPLICAS \
-        $DOCKER_SERVICE_NAME;
-else
+
+#
+# Varnish Instance Create
+#
+varnish::create(){
     # DOCKER_ADDITIONAL_START="--publish 80:80";
     docker service create \
         $DOCKER_LOG_OPTIONS \
@@ -41,10 +40,30 @@ else
         --mount type=bind,source=$VARNISH_HOME/config.vcl,destination=/etc/varnish/default.vcl \
         $DOCKER_ADDITIONAL_START \
         --name $DOCKER_SERVICE_NAME $DOCKER_IMAGE;
+}
+
+#
+# Varnish Instace Update
+#
+varnish::update(){
+    docker service update \
+        --image $DOCKER_IMAGE \
+        --replicas $DOCKER_REPLICAS \
+        $DOCKER_ADDITIONAL_UPDATE \
+        $DOCKER_SERVICE_NAME;
+}
+
+if docker service ls | grep $DOCKER_SERVICE_NAME; then
+    # update instance
+    varnish::update
+else
+    # create instance
+    varnish::create
 fi;
 
 sleep 20;
 
 docker service ls;
-docker service inspect --pretty $DOCKER_SERVICE_NAME;
 docker service ps $DOCKER_SERVICE_NAME;
+docker service inspect --pretty $DOCKER_SERVICE_NAME;
+docker ps -a

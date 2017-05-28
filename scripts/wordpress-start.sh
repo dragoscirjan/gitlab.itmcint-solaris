@@ -109,6 +109,7 @@ wordpress::update(){
         --mount-add type=bind,source=$WORDPRESS_HOME/wp-content/themes,destination=/usr/src/wordpress/wp-content/themes \
         --mount-add type=bind,source=$WORDPRESS_HOME/wp-content/uploads,destination=/usr/src/wordpress/wp-content/uploads \
         --replicas $DOCKER_REPLICAS \
+        $DOCKER_ADDITIONAL_UPDATE \
         $DOCKER_SERVICE_NAME
     # update nginx service
     wordpress::at-update::nginx
