@@ -33,11 +33,12 @@ echo "$@" | grep --rm && docker service rm $DOCKER_SERVICE_NAME || true
 varnish::create(){
     # DOCKER_ADDITIONAL_START="--publish 80:80";
     docker service create \
-        $DOCKER_LOG_OPTIONS \
-        --replicas $DOCKER_REPLICAS \
-        --hostname $DOCKER_HOSTNAME \
         --env VCL_USE_CONFIG=yes \
+        --hostname $DOCKER_HOSTNAME \
         --mount type=bind,source=$VARNISH_HOME/config.vcl,destination=/etc/varnish/default.vcl \
+        --network web-network \
+        --replicas $DOCKER_REPLICAS \
+        $DOCKER_LOG_OPTIONS \
         $DOCKER_ADDITIONAL_START \
         --name $DOCKER_SERVICE_NAME $DOCKER_IMAGE;
 }
@@ -52,6 +53,20 @@ varnish::update(){
         $DOCKER_ADDITIONAL_UPDATE \
         $DOCKER_SERVICE_NAME;
 }
+
+#
+# Varnish Instance Remove
+#
+varnish::remove(){
+    docker service rm $DOCKER_SERVICE_NAME
+}
+
+#
+# remove directive
+#
+if echo $* | grep "remove"; then
+    varnish::remove
+fi
 
 if docker service ls | grep $DOCKER_SERVICE_NAME; then
     # update instance
