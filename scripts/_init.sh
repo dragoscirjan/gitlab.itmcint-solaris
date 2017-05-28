@@ -1,5 +1,10 @@
 #! /bin/sh
-set -xe 
+set -xe
+
+export WRAPPER="`readlink -f "$0"`"
+HERE="`dirname "$WRAPPER"`"
+
+. $HERE/_lib.sh
 
 # web-network
 

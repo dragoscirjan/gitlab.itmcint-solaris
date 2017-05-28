@@ -4,6 +4,8 @@ set -xe;
 export WRAPPER="`readlink -f "$0"`"
 HERE="`dirname "$WRAPPER"`"
 
+. $HERE/_init.sh
+
 #
 # @link https://docs.docker.com/engine/reference/commandline/service_create/
 # @link https://docs.docker.com/engine/reference/commandline/service_update/
@@ -22,50 +24,13 @@ DOCKER_REPLICAS=${DOCKER_REPLICAS:-1};
 VARNISH_HOME=${VARNISH_HOME:-$HERE/data/http/varnish}
 
 mkdir -p $VARNISH_HOME
-bash $HERE/varnish.vcl.sh > $VARNISH_HOME/config.vcl
 
-echo "$@" | grep --rm && docker service rm $DOCKER_SERVICE_NAME || true
-
-
-#
-# Varnish Instance Create
-#
-varnish::create(){
-    # DOCKER_ADDITIONAL_START="--publish 80:80";
-    docker service create \
-        --env VCL_USE_CONFIG=yes \
-        --hostname $DOCKER_HOSTNAME \
-        --mount type=bind,source=$VARNISH_HOME/config.vcl,destination=/etc/varnish/default.vcl \
-        --network web-network \
-        --replicas $DOCKER_REPLICAS \
-        $DOCKER_LOG_OPTIONS \
-        $DOCKER_ADDITIONAL_START \
-        --name $DOCKER_SERVICE_NAME $DOCKER_IMAGE;
-}
-
-#
-# Varnish Instace Update
-#
-varnish::update(){
-    docker service update \
-        --image $DOCKER_IMAGE \
-        --replicas $DOCKER_REPLICAS \
-        $DOCKER_ADDITIONAL_UPDATE \
-        $DOCKER_SERVICE_NAME;
-}
-
-#
-# Varnish Instance Remove
-#
-varnish::remove(){
-    docker service rm $DOCKER_SERVICE_NAME
-}
-
-#
-# remove directive
-#
 if echo $* | grep "remove"; then
+    # remove instance
     varnish::remove
+fi
+if echo $* | grep "remove-only"; then
+    exit 0
 fi
 
 if docker service ls | grep $DOCKER_SERVICE_NAME; then
@@ -78,7 +43,5 @@ fi;
 
 sleep 20;
 
-docker service ls;
-docker service ps $DOCKER_SERVICE_NAME;
-docker service inspect --pretty $DOCKER_SERVICE_NAME;
-docker ps -a
+# info instance
+varnish::info
