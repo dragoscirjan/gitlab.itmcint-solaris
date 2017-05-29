@@ -204,7 +204,7 @@ wordpress::nginx::update(){
 
 wordpress::nginx-proxy::update(){
     # create nginx-proxy conf
-    cat $HERE/data/http/nginx-proxy/http-only.conf \
+    cat $HERE/data/http/nginx-proxy/https-only.conf \
         | sed -e "s/localhost/$WORDPRESS_TLD/g" \
         > $NGINX_HOME_PROXY/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
 
