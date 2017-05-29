@@ -98,7 +98,7 @@ nginx-proxy::create(){
 
     # DOCKER_ADDITIONAL_CREATE="--publish 80:80";
     docker service create \
-        --env NGINX_CERTBOT_OPTIONS="office@itmediaconnect.ro" \
+        --env NGINX_CERTBOT_EMAIL="office@itmediaconnect.ro" \
         --hostname $DOCKER_HOSTNAME \
         --mount type=bind,source=$NGINX_HOME,destination=/etc/nginx/conf.d \
         --mount type=bind,source=$NGINX_HOME_CERTBOT,destination=/etc/letsencrypt \
