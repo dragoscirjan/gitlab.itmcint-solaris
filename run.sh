@@ -1,7 +1,7 @@
 #! /bin/bash
 set -xe 
 
-$PREFIX=solaris
+PREFIX=solaris
 
 apt-get update && apt-get install -y wget
 which docker || wget -q -O - https://get.docker.com | bash
