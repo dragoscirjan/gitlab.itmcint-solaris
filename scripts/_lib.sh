@@ -269,13 +269,17 @@ wordpress::remove(){
 
     # remove nginx config file
     rm $NGINX_HOME/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
-
     # update nginx
     docker service update \
+        $ENV_UPDATE \
         --mount-rm /usr/src/wordpress/$DOCKER_SERVICE_NAME/wp-content/themes \
         --mount-rm /usr/src/wordpress/$DOCKER_SERVICE_NAME/wp-content/uploads \
         --mount-rm /usr/src/wordpress/$DOCKER_SERVICE_NAME \
         global_nginx
+
+    # remove nginx-proxy config file
+    rm $NGINX_HOME_PROXY/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
+    docker service update $ENV_UPDATE global_nginx-proxy
 
     # remove wordpress volume
     # docker volume rm $DOCKER_SERVICE_NAME
@@ -294,6 +298,10 @@ wordpress::update(){
         --replicas $DOCKER_REPLICAS \
         $DOCKER_ADDITIONAL_UPDATE \
         $DOCKER_SERVICE_NAME
-    # update nginx service
+
+    # update nginx
     wordpress::nginx::update
+
+    # update nginx-proxy
+    wordpress::nginx-proxy::update
 }
