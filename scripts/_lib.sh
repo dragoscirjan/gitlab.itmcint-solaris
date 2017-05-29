@@ -1,6 +1,9 @@
 #! /bin/sh
 if [ "$DEBUG" = "1" ]; then set -xe; else set -e; fi
 
+export WRAPPER="`readlink -f "$0"`"
+HERE="`dirname "$WRAPPER"`"
+
 #
 # @link https://docs.docker.com/engine/reference/commandline/service_create/
 # @link https://docs.docker.com/engine/reference/commandline/service_update/
@@ -177,13 +180,35 @@ varnish::remove(){
 # Add Wordpress Instance Mounts to Nginx
 #
 wordpress::nginx::update(){
+    # create nginx conf
+    cat $HERE/wordpress.conf \
+        | sed -e "s/wordpress.local/$WORDPRESS_TLD/g" \
+        | sed -e "s/php.local/$DOCKER_SERVICE_NAME/g" \
+        | sed -e "s/__ROOT__/\/usr\/src\/wordpress\/$DOCKER_SERVICE_NAME/g" \
+        > $NGINX_HOME/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
+    # update nginx
+    while [ "$(wordpress::test-running)" != "0" ]; do
+        echo "Waiting for Wordpress & php-fpm to start";
+        sleep 10
+    done
+
     local soureWPContent=$WORDPRESS_HOME/wp-content
     local destiWpContent=/usr/src/wordpress/$DOCKER_SERVICE_NAME
     docker service update \
         --mount-add type=volume,source=$DOCKER_SERVICE_NAME,destination=$destiWpContent \
         --mount-add type=bind,source=$soureWPContent/themes,destination=$destiWpContent/wp-content/themes \
         --mount-add type=bind,source=$soureWPContent/uploads,destination=$destiWpContent/wp-content/uploads \
+        $ENV_UPDATE \
         global_nginx
+}
+
+wordpress::nginx-proxy::update(){
+    # create nginx-proxy conf
+    cat $HERE/data/http/nginx-proxy/http-only.conf \
+        | sed -e "s/localhost/$WORDPRESS_TLD/g" \
+        > $NGINX_HOME_PROXY/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
+
+    docker service update $ENV_UPDATE global_nginx-cache
 }
 
 #
@@ -216,23 +241,14 @@ wordpress::create(){
         $DOCKER_ADDITIONAL_CREATE \
         $DOCKER_IMAGE
 
-    # create nginx conf
-    cat $HERE/wordpress.conf \
-        | sed -e "s/wordpress.local/$WORDPRESS_TLD/g" \
-        | sed -e "s/php.local/$DOCKER_SERVICE_NAME/g" \
-        | sed -e "s/__ROOT__/\/usr\/src\/wordpress\/$DOCKER_SERVICE_NAME/g" \
-        > $NGINX_HOME/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
     # update nginx
-    while [ "$(wordpress::test-running)" != "0" ]; do
-        echo "Waiting for Wordpress & php-fpm to start";
-        sleep 10
-    done
     wordpress::nginx::update
 
-    # create nginx-proxy conf
     # update nginx-proxy
-    # wordpress::nginx-proxy::update
+    wordpress::nginx-proxy::update
 }
+
+wordpress::nginx:update
 
 wordpress::test-running(){
     docker ps -a | grep -v Exited | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" > /dev/null || echo 1
