@@ -28,7 +28,7 @@ abstract::web::info(){
     docker service inspect --pretty $serviceName;
     docker service ps $serviceName;
     docker ps -a | grep -v Exited |  egrep "$serviceName\.[0-9]+"
-    docker ps -a | grep Exited |  egrep "$serviceName\.[0-9]+"
+    docker ps -a | grep Exited |  egrep "$serviceName\.[0-9]+" || true
 }
 
 #
