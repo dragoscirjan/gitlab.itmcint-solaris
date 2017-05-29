@@ -208,7 +208,7 @@ wordpress::nginx-proxy::update(){
         | sed -e "s/localhost/$WORDPRESS_TLD/g" \
         > $NGINX_HOME_PROXY/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
 
-    docker service update $ENV_UPDATE global_nginx-cache
+    docker service update $ENV_UPDATE global_nginx-proxy
 }
 
 #
