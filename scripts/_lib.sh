@@ -268,7 +268,7 @@ wordpress::remove(){
     abstract::web::remove
 
     # remove nginx config file
-    rm $NGINX_HOME/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
+    rm -rf $NGINX_HOME/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
     # update nginx
     docker service update \
         $ENV_UPDATE \
@@ -278,7 +278,7 @@ wordpress::remove(){
         global_nginx
 
     # remove nginx-proxy config file
-    rm $NGINX_HOME_PROXY/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
+    rm -rf $NGINX_HOME_PROXY/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
     docker service update $ENV_UPDATE global_nginx-proxy
 
     # remove wordpress volume
