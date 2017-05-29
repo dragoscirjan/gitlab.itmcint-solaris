@@ -39,7 +39,7 @@ docker-ip() {
 WORDPRESS_HOME=${WORDPRESS_HOME:-$HERE/data/sites/$DOCKER_HOSTNAME}
 
 NGINX_HOME=${NGINX_HOME:-$HERE/data/http/nginx}
-NGINX_HOME_PROXY=${NGINX_HOME:-$HERE/data/http/nginx-proxy}
+NGINX_HOME_PROXY=${NGINX_HOME_PROXY:-$HERE/data/http/nginx-proxy}
 
 ###
 
