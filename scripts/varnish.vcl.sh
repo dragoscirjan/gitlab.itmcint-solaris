@@ -14,21 +14,9 @@ vcl 4.0;
 import directors;    # load the directors
 
 # Define the list of backends (web servers).
-VCL_CONFIG
 
-docker-ip() {
-    docker inspect --format='{{.Name}}-{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' \
-        $(docker ps -a | grep global_nginx\. | cut -f1 -d' ');
-}
-
-hosts_count=$(docker-ip | wc -l);
-i=1;
-
-docker-ip | while read hostip; do
-
-	cat <<VCL_CONFIG
-backend web$i {
-    .host = "$(echo $hostip | cut -f2 -d'-')"; # $(echo $hostip | cut -f1 -d'-') automated discovery
+backend web1 {
+    .host = "global_nginx";
     .port = "80";
     .probe = {
         .url = "/";
@@ -38,10 +26,36 @@ backend web$i {
         .threshold = 3;
     }
 }
-VCL_CONFIG
-	i=$((i+1))
 
-done
+VCL_CONFIG
+
+docker-ip() {
+    docker inspect --format='{{.Name}}-{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' \
+        | grep -v Exited \
+        $(docker ps -a | grep global_nginx\. | cut -f1 -d' ');
+}
+
+hosts_count=$(docker-ip | wc -l);
+i=1;
+
+# docker-ip | while read hostip; do
+
+# 	cat <<VCL_CONFIG
+# backend web$i {
+#     .host = "$(echo $hostip | cut -f2 -d'-')"; # $(echo $hostip | cut -f1 -d'-') automated discovery
+#     .port = "80";
+#     .probe = {
+#         .url = "/";
+#         .timeout = 1s;
+#         .interval = 5s;
+#         .window = 5;
+#         .threshold = 3;
+#     }
+# }
+# VCL_CONFIG
+# 	i=$((i+1))
+
+# done
 
 cat <<VCL_CONFIG
 
@@ -50,11 +64,12 @@ cat <<VCL_CONFIG
 # Define the director that determines how to distribute incoming requests.
 sub vcl_init {
     new bar = directors.round_robin();
+    bar.add_backend(web1);
 VCL_CONFIG
 
-for (( i=1 ; i<=$hosts_count; i++ )); do
-    echo "    bar.add_backend(web$i);"
-done
+# for (( i=1 ; i<=$hosts_count; i++ )); do
+#     echo "    bar.add_backend(web$i);"
+# done
 
 cat <<VCL_CONFIG
 }
