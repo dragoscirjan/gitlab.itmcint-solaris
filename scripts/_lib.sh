@@ -248,8 +248,6 @@ wordpress::create(){
     wordpress::nginx-proxy::update
 }
 
-wordpress::nginx:update
-
 wordpress::test-running(){
     docker ps -a | grep -v Exited | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" > /dev/null || echo 1
 
