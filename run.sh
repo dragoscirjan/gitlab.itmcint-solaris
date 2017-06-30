@@ -55,7 +55,7 @@ sleep 10
 docker stop jenkins
 docker start jenkins
 
-docker ps -a | grep $PREFIX-dind | xargs docker rm -f 
+#docker ps -a | grep $PREFIX-dind | xargs docker rm -f 
 
 # TODO: Create our own or find a more "secure" image
-docker run --privileged --name $PREFIX-dind -d benhall/dind-jenkins-agent
+#docker run --privileged --name $PREFIX-dind -d benhall/dind-jenkins-agent
