@@ -41,7 +41,7 @@ if docker service ls | grep $DOCKER_SERVICE_NAME; then
   docker service update \
         $ENV_UPDATE \
         --image $DOCKER_IMAGE \
-        --publish 3306:3306 \
+        --publish-add 3306:3306 \
         $DOCKER_ADDITIONAL_UPDATE \
         $DOCKER_SERVICE_NAME;
   exit 0;
