@@ -38,6 +38,12 @@ fi
 #
 if docker service ls | grep $DOCKER_SERVICE_NAME; then
   echo "Container $DOCKER_SERVICE_NAME already exists!";
+  docker service update \
+        $ENV_UPDATE \
+        --image $DOCKER_IMAGE \
+        --publish 3306:3306 \
+        $DOCKER_ADDITIONAL_UPDATE \
+        $DOCKER_SERVICE_NAME;
   exit 0;
 fi;
 
@@ -54,6 +60,7 @@ docker service create $DOCKER_LOG_OPTIONS --mode global \
     --mount type=bind,source=$MYSQL_HOME,destination=/sql \
     --mount type=bind,source=$MYSQL_LIB_HOME,destination=/var/lib/mysql \
     --network web-network \
+    --publish 3306:3306 \
     $DOCKER_ADDITIONAL_START \
     --name $DOCKER_SERVICE_NAME $DOCKER_IMAGE
 
