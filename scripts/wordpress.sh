@@ -4,8 +4,6 @@ set -xe;
 export WRAPPER="`readlink -f "$0"`"
 HERE="`dirname "$WRAPPER"`"
 
-. $HERE/_init.sh
-
 #
 # @link https://docs.docker.com/engine/reference/commandline/service_create/
 # @link https://docs.docker.com/engine/reference/commandline/service_update/
@@ -31,6 +29,8 @@ WORDPRESS_MYSQL_HOST=${WORDPRESS_MYSQL_HOST:-global_mysql}
 WORDPRESS_TABLE_PREFIX=${WORDPRESS_TABLE_PREFIX:-wp}
 # WORDPRESS_PLUGINS=${WORDPRESS_PLUGINS:-};
 
+. $HERE/_init.sh
+
 docker-ip() {
     docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' \
         $(docker ps -a | grep $DOCKER_SERVICE_NAME\. | cut -f1 -d' ');
@@ -44,6 +44,16 @@ NGINX_HOME_PROXY=${NGINX_HOME_PROXY:-$HERE/data/http/nginx-proxy}
 ###
 
 mkdir -p $WORDPRESS_HOME/wp-content/plugins $WORDPRESS_HOME/wp-content/themes $WORDPRESS_HOME/wp-content/uploads
+
+export DOCKER_ADDITIONAL_UPDATE="$DOCKER_ADDITIONAL_UPDATE \
+    --mount-add type=bind,source=/etc/timezone,destination=/etc/timezone \
+    --mount-add type=bind,source=/etc/localtime,destination=/etc/localtime \
+"
+
+export DOCKER_ADDITIONAL_CREATE="$DOCKER_ADDITIONAL_CREATE \
+    --mount type=bind,source=/etc/timezone,destination=/etc/timezone \
+    --mount type=bind,source=/etc/localtime,destination=/etc/localtime \
+"
 
 #
 # remove directive
