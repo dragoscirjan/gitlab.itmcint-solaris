@@ -14,6 +14,9 @@ HERE="`dirname "$WRAPPER"`"
 #  Create Abstract Service
 #
 abstract::web::create(){
+    # pull image
+    docker pull $DOCKER_IMAGE
+    # create service
     docker service create \
         --hostname $DOCKER_HOSTNAME \
         --network web-network \
@@ -61,6 +64,8 @@ abstract::web::remove(){
 ################################################################################
 
 nginx::create(){
+    # pull image
+    docker pull $DOCKER_IMAGE
     # DOCKER_ADDITIONAL_CREATE="--publish 80:80";
     docker service create \
         --hostname $DOCKER_HOSTNAME \
@@ -93,6 +98,8 @@ nginx::update(){
 #
 #
 nginx-proxy::create(){
+    # pull image
+    docker pull $DOCKER_IMAGE
     # generate ssl
     openssl req -subj '/CN=qubestash.org/O=QubeStash ORG./C=RO' \
         -x509 -nodes -days 365 -newkey rsa:2048 \
@@ -141,6 +148,8 @@ nginx-proxy::update(){
 # Varnish Instance Create
 #
 varnish::create(){
+    # pull image
+    docker pull $DOCKER_IMAGE
     # create config
     bash $HERE/varnish.vcl.sh > $VARNISH_HOME/config.vcl
     # service create
@@ -215,6 +224,8 @@ wordpress::nginx-proxy::update(){
 # Start/Create Wordpress Instance
 #
 wordpress::create(){
+    # pull image
+    docker pull $DOCKER_IMAGE
     # create volume
     docker volume create --name $DOCKER_SERVICE_NAME
     # create service
