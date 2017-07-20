@@ -14,7 +14,7 @@ DOCKER_SERVICE_NAME=${DOCKER_SERVICE_NAME:-wordpress}
 DOCKER_HOSTNAME=${DOCKER_HOSTNAME:-wordpress.local}
 
 DOCKER_LOG_OPTIONS=${DOCKER_LOG_OPTIONS:- --log-driver json-file --log-opt max-size=10m --log-opt max-file=3}
-DOCKER_IMAGE=${DOCKER_IMAGE:-qubestash/wordpress:php-7.1.5-fpm-alpine}
+DOCKER_IMAGE=${DOCKER_IMAGE:-qubestash/wordpress:alpine}
 DOCKER_REPLICAS=${DOCKER_REPLICAS:-1}
 
 MYSQL_HOME=${MYSQL_HOME:-$HERE/mysql}
