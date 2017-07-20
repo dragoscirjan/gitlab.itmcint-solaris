@@ -231,6 +231,7 @@ wordpress::create(){
     # create service
         # --env WORDPRESS_USE_EXTERNAL_VOLUME=yes \
     docker service create \
+        --env WORDPRESS_DOMAIN_PROTO=$WORDPRESS_DOMAIN_PROTO \
         --env WORDPRESS_MYSQL_DB=$WORDPRESS_MYSQL_DB \
         --env WORDPRESS_MYSQL_USER=$WORDPRESS_MYSQL_USER \
         --env WORDPRESS_MYSQL_PASS=$WORDPRESS_MYSQL_PASS \
