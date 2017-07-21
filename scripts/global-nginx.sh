@@ -30,7 +30,7 @@ fi
 #
 # create/update
 #
-if docker service ls | grep $DOCKER_SERVICE_NAME; then
+if docker service ls | grep $DOCKER_SERVICE_NAME | grep -v proxy; then
     # nginx::update
     abstract::web::update
 else
