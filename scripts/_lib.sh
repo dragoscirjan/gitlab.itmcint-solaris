@@ -257,6 +257,8 @@ wordpress::create(){
     # update nginx
     wordpress::nginx::update
 
+    varnish::update
+
     # update nginx-proxy
     wordpress::nginx-proxy::update
 }
@@ -314,6 +316,8 @@ wordpress::update(){
 
     # update nginx
     wordpress::nginx::update
+
+    varnish::update
 
     # update nginx-proxy
     wordpress::nginx-proxy::update
