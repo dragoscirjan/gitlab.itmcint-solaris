@@ -10,6 +10,10 @@ HERE="`dirname "$WRAPPER"`"
 # @link https://docs.docker.com/engine/reference/commandline/service_inspect/
 #
 
+###################################################################################################
+# Abstract; Copy this to start new apps
+###################################################################################################
+
 #
 #  Create Abstract Service
 #
@@ -134,10 +138,10 @@ nginx-proxy::remove(){
 }
 
 #
-#
+# Remove NGINX Proxy service
 #
 nginx-proxy::update(){
-    abstract::web::update
+    docker service update $ENV_UPDATE global_nginx-proxy
 }
 
 ################################################################################
@@ -171,7 +175,7 @@ varnish::info(){
 # Varnish Instace Update
 #
 varnish::update(){
-    abstract::web::update
+    docker service update $ENV_UPDATE global_varnish-cache
 }
 
 #
@@ -179,6 +183,85 @@ varnish::update(){
 #
 varnish::remove(){
     abstract::web::remove
+}
+
+###################################################################################################
+# http-html
+###################################################################################################
+
+#
+# Add HTML Instance Mounts to Nginx
+#
+http-html::nginx::update() {
+
+    # create nginx conf
+    # 1 set application domain
+    # 2 set application html path
+    # 3 create nginx config file under ${domain}.conf
+    cat $HERE/$NGINX_CONF \
+        | sed -e "s/domain.local/$APPLICATION_TLD/g" \
+        | sed -e "s/__ROOT__/\/var\/www\/html\/$(echo $APPLICATION_TLD | cut -f1 -d' ')/g" \
+        > $NGINX_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
+
+    # update nginx service with a new mount for the application
+    docker service update \
+        --mount-add type=bind,source=$APPLICATION_HOME,destination=/var/www/html/$(echo $APPLICATION_TLD | cut -f1 -d' ') \
+        $ENV_UPDATE \
+        global_nginx
+}
+
+#
+# Add domain configuration to nginx proxy as well
+#
+http-html::nginx-proxy::update() {
+    # create nginx-proxy conf
+    cat $HERE/global-nginx-proxy-https-only.conf \
+        | sed -e "s/localhost/$APPLICATION_TLD/g" \
+        > $NGINX_HOME_PROXY/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
+    nginx-proxy::update
+}
+
+#
+# Create is not necesary for static websites. We will just update global_nginx service
+#
+http-html::create() {
+    echo 
+}
+
+#
+# Update Abstract Service
+#
+http-html::update() {
+    http-html::nginx::update
+    varnish::update
+    http-html::nginx-proxy::update  
+}
+
+
+#
+# Remove Abstract Service
+#
+http-html::remove() {
+    rm -rf $NGINX_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
+    rm -rf $NGINX_HOME_PROXY/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
+    docker service update --mount-rm /var/www/html/$(echo $APPLICATION_TLD | cut -f1 -d' ') $ENV_UPDATE global_nginx
+    varnish::update
+    nginx-proxy::update
+}
+
+#
+# Abstract for all http-* 
+#
+http-html::test-running(){
+    docker ps -a | grep -v Exited | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" > /dev/null || echo 1
+
+    docker ps -a | grep -v Exited \
+        | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" | awk -F" " '{print $NF}' \
+        | while read container; do
+            docker logs $container 2>&1 | grep "NOTICE: fpm is running" > /dev/null || echo 2
+        done
+
+    echo 0
 }
 
 ################################################################################
