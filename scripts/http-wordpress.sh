@@ -20,7 +20,7 @@ DOCKER_REPLICAS=${DOCKER_REPLICAS:-1}
 MYSQL_HOME=${MYSQL_HOME:-$HERE/mysql}
 MYSQL_LIB_HOME=${MYSQL_LIB_HOME:-$HERE/mysql/lib}
 
-WORDPRESS_TLD=${WORDPRESS_TLD:-wordpress.local}
+APPLICATION_TLD=${APPLICATION_TLD:-wordpress.local}
 
 # WORDPRESS_DOMAIN_PROTO=${WORDPRESS_DOMAIN_PROTO:-https}
 WORDPRESS_MYSQL_DB=${WORDPRESS_MYSQL_DB:-database}
@@ -37,14 +37,13 @@ docker-ip() {
         $(docker ps -a | grep $DOCKER_SERVICE_NAME\. | cut -f1 -d' ');
 }
 
-WORDPRESS_HOME=${WORDPRESS_HOME:-$HERE/data/sites/$DOCKER_HOSTNAME}
+APPLICATION_HOME=${APPLICATION_HOME:-$HERE/data/sites/$DOCKER_HOSTNAME}
 
 NGINX_HOME=${NGINX_HOME:-$HERE/data/http/nginx}
+NGINX_CONF=http-wordpress.conf
 NGINX_HOME_PROXY=${NGINX_HOME_PROXY:-$HERE/data/http/nginx-proxy}
 
-###
-
-mkdir -p $WORDPRESS_HOME/wp-content/plugins $WORDPRESS_HOME/wp-content/themes $WORDPRESS_HOME/wp-content/uploads
+mkdir -p $APPLICATION_HOME/wp-content/plugins $APPLICATION_HOME/wp-content/themes $APPLICATION_HOME/wp-content/uploads
 
 export DOCKER_ADDITIONAL_UPDATE="$DOCKER_ADDITIONAL_UPDATE \
     --mount-add type=bind,source=/etc/timezone,destination=/etc/timezone \
@@ -84,8 +83,8 @@ docker service ps $DOCKER_SERVICE_NAME
 
 
 # cat $HERE/website.proxy.conf \
-#     | sed -e "s/domain.local/$WORDPRESS_TLD/g" \
-#     > $NGINX_HOME_PROXY/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
+#     | sed -e "s/domain.local/$APPLICATION_TLD/g" \
+#     > $NGINX_HOME_PROXY/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
 
 # sleep 20
 

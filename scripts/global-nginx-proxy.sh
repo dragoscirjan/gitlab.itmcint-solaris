@@ -21,6 +21,22 @@ NGINX_HOME_SSL=${NGINX_HOME_SSL:-$HERE/data/http/ssl};
 
 mkdir -p $NGINX_HOME $NGINX_HOME_SSL $NGINX_HOME_QUBE $NGINX_HOME_CERTBOT;
 
+if echo $* | grep "dev"; then
+	export DOCKER_ADDITIONAL_UPDATE=" \
+		$DOCKER_ADDITIONAL_UPDATE \
+		--mount-add type=bind,source=/home/dragosc/Workspace/QubeStash/http-nginx/scripts/nginx-certbot,destination=/nginx-certbot \
+	"
+	export DOCKER_ADDITIONAL_CREATE=" \
+		$DOCKER_ADDITIONAL_CREATE \
+		--mount type=bind,source=/home/dragosc/Workspace/QubeStash/http-nginx/scripts/nginx-certbot,destination=/nginx-certbot \
+	"
+fi
+
+if echo $* | grep "--publish"; then
+	export DOCKER_ADDITIONAL_CREATE="$DOCKER_ADDITIONAL_CREATE --publish 80:80 --publish 443:443 --env NGINX_DEBUG=yes"
+	export DOCKER_ADDITIONAL_UPDATE="$DOCKER_ADDITIONAL_UPDATE --publish 80:80 --publish 443:443 --env NGINX_DEBUG=yes"
+fi
+
 #
 # remove directive
 #
@@ -34,6 +50,7 @@ fi
 #
 # create/update
 #
+docker pull $DOCKER_IMAGE
 if docker service ls | grep $DOCKER_SERVICE_NAME; then
     nginx-proxy::update
 else

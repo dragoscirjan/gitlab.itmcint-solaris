@@ -58,9 +58,8 @@ abstract::web::update(){
 # Remove Abstract Service
 #
 abstract::web::remove(){
-    local serviceName=$1
-    if [ "$serviceName" = "" ]; then serviceName=$DOCKER_SERVICE_NAME; fi
-    docker service rm $serviceName
+    local serviceName=${1:-$DOCKER_SERVICE_NAME}
+    docker service rm $serviceName || true
 }
 
 ################################################################################
@@ -193,7 +192,6 @@ varnish::remove(){
 # Add HTML Instance Mounts to Nginx
 #
 http-html::nginx::update() {
-
     # create nginx conf
     # 1 set application domain
     # 2 set application html path
@@ -249,21 +247,6 @@ http-html::remove() {
     nginx-proxy::update
 }
 
-#
-# Abstract for all http-* 
-#
-http-html::test-running(){
-    docker ps -a | grep -v Exited | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" > /dev/null || echo 1
-
-    docker ps -a | grep -v Exited \
-        | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" | awk -F" " '{print $NF}' \
-        | while read container; do
-            docker logs $container 2>&1 | grep "NOTICE: fpm is running" > /dev/null || echo 2
-        done
-
-    echo 0
-}
-
 ################################################################################
 # Wordpress
 ################################################################################
@@ -273,18 +256,22 @@ http-html::test-running(){
 #
 wordpress::nginx::update(){
     # create nginx conf
-    cat $HERE/wordpress.conf \
-        | sed -e "s/wordpress.local/$WORDPRESS_TLD/g" \
+    # 1 set application domain
+    # 2 set application html path
+    # 3 create nginx config file under ${domain}.conf
+    cat $HERE/$NGINX_CONF \
+        | sed -e "s/wordpress.local/$APPLICATION_TLD/g" \
         | sed -e "s/php.local/$DOCKER_SERVICE_NAME/g" \
         | sed -e "s/__ROOT__/\/usr\/src\/wordpress\/$DOCKER_SERVICE_NAME/g" \
-        > $NGINX_HOME/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
-    # update nginx
+        > $NGINX_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
+  
     while [ "$(wordpress::test-running)" != "0" ]; do
         echo "Waiting for Wordpress & php-fpm to start";
         sleep 10
     done
 
-    local soureWPContent=$WORDPRESS_HOME/wp-content
+    # update nginx
+    local soureWPContent=$APPLICATION_HOME/wp-content
     local destiWpContent=/usr/src/wordpress/$DOCKER_SERVICE_NAME
     docker service update \
         --mount-add type=volume,source=$DOCKER_SERVICE_NAME,destination=$destiWpContent \
@@ -294,13 +281,11 @@ wordpress::nginx::update(){
         global_nginx
 }
 
+#
+# Add Wordpress Instance to NGINX Proxy
+#
 wordpress::nginx-proxy::update(){
-    # create nginx-proxy conf
-    cat $HERE/global-nginx-proxy-https-only.conf \
-        | sed -e "s/localhost/$WORDPRESS_TLD/g" \
-        > $NGINX_HOME_PROXY/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
-
-    docker service update $ENV_UPDATE global_nginx-proxy
+    http-html::nginx-proxy::update
 }
 
 #
@@ -311,8 +296,6 @@ wordpress::create(){
     docker pull $DOCKER_IMAGE
     # create volume
     docker volume create --name $DOCKER_SERVICE_NAME
-    # create service
-        # --env WORDPRESS_USE_EXTERNAL_VOLUME=yes \
     docker service create \
         --env WORDPRESS_DOMAIN_PROTO=$WORDPRESS_DOMAIN_PROTO \
         --env WORDPRESS_MYSQL_DB=$WORDPRESS_MYSQL_DB \
@@ -330,22 +313,40 @@ wordpress::create(){
         --name $DOCKER_SERVICE_NAME \
         --network web-network \
         --mount type=volume,source=$DOCKER_SERVICE_NAME,destination=/usr/src/wordpress \
-        --mount type=bind,source=$WORDPRESS_HOME/wp-content/themes,destination=/usr/src/wordpress/wp-content/themes \
-        --mount type=bind,source=$WORDPRESS_HOME/wp-content/uploads,destination=/usr/src/wordpress/wp-content/uploads \
+        --mount type=bind,source=$APPLICATION_HOME/wp-content/themes,destination=/usr/src/wordpress/wp-content/themes \
+        --mount type=bind,source=$APPLICATION_HOME/wp-content/uploads,destination=/usr/src/wordpress/wp-content/uploads \
         --replicas $DOCKER_REPLICAS \
         $DOCKER_LOG_OPTIONS \
         $DOCKER_ADDITIONAL_CREATE \
         $DOCKER_IMAGE
 
-    # update nginx
     wordpress::nginx::update
-
     varnish::update
-
-    # update nginx-proxy
-    wordpress::nginx-proxy::update
+    wordpress::nginx-proxy::update  
 }
 
+#
+# Update Wordpress Instance
+#
+wordpress::update(){
+    # update service
+    docker service update \
+        $ENV_UPDATE \
+        --image $DOCKER_IMAGE \
+        --mount-add type=bind,source=$APPLICATION_HOME/wp-content/themes,destination=/usr/src/wordpress/wp-content/themes \
+        --mount-add type=bind,source=$APPLICATION_HOME/wp-content/uploads,destination=/usr/src/wordpress/wp-content/uploads \
+        --replicas $DOCKER_REPLICAS \
+        $DOCKER_ADDITIONAL_UPDATE \
+        $DOCKER_SERVICE_NAME
+
+    wordpress::nginx::update
+    varnish::update
+    wordpress::nginx-proxy::update  
+}
+
+#
+#
+#
 wordpress::test-running(){
     docker ps -a | grep -v Exited | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" > /dev/null || echo 1
 
@@ -366,7 +367,7 @@ wordpress::remove(){
     abstract::web::remove
 
     # remove nginx config file
-    rm -rf $NGINX_HOME/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
+    rm -rf $NGINX_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
     # update nginx
     docker service update \
         $ENV_UPDATE \
@@ -376,32 +377,10 @@ wordpress::remove(){
         global_nginx
 
     # remove nginx-proxy config file
-    rm -rf $NGINX_HOME_PROXY/$(echo $WORDPRESS_TLD | cut -f1 -d' ').conf
+    rm -rf $NGINX_HOME_PROXY/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
     docker service update $ENV_UPDATE global_nginx-proxy
 
     # remove wordpress volume
+    # sleep 10
     # docker volume rm $DOCKER_SERVICE_NAME
-}
-
-#
-# Update Wordpress Instance
-#
-wordpress::update(){
-    # update service
-    docker service update \
-        $ENV_UPDATE \
-        --image $DOCKER_IMAGE \
-        --mount-add type=bind,source=$WORDPRESS_HOME/wp-content/themes,destination=/usr/src/wordpress/wp-content/themes \
-        --mount-add type=bind,source=$WORDPRESS_HOME/wp-content/uploads,destination=/usr/src/wordpress/wp-content/uploads \
-        --replicas $DOCKER_REPLICAS \
-        $DOCKER_ADDITIONAL_UPDATE \
-        $DOCKER_SERVICE_NAME
-
-    # update nginx
-    wordpress::nginx::update
-
-    varnish::update
-
-    # update nginx-proxy
-    wordpress::nginx-proxy::update
 }
