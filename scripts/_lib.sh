@@ -14,6 +14,12 @@ HERE="`dirname "$WRAPPER"`"
 # Abstract; Copy this to start new apps
 ###################################################################################################
 
+env::update() {
+    sleep 1
+    export ENV_UPDATE="--env-add UPDATE=$(date +%s.%N)"
+}
+env::update
+
 #
 #  Create Abstract Service
 #
@@ -45,6 +51,7 @@ abstract::web::info(){
 # Update Abstract Service
 #
 abstract::web::update(){
+    env::update
     docker service update \
         $ENV_UPDATE \
         --image $DOCKER_IMAGE \
@@ -62,25 +69,13 @@ abstract::web::remove(){
     docker service rm $serviceName || true
 }
 
-#
-# Test whether a php-fpm container has properly started.
-#
-abstract::php-fpm::test-running(){
-    docker ps -a | grep -v Exited | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" > /dev/null || echo 1
-
-    docker ps -a | grep -v Exited \
-        | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" | awk -F" " '{print $NF}' \
-        | while read container; do
-            docker logs $container 2>&1 | grep "NOTICE: fpm is running" > /dev/null || echo 2
-        done
-
-    echo 0
-}
-
 ################################################################################
 # NGINX
 ################################################################################
 
+#
+# Remove NGINX Service
+#
 nginx::create(){
     # pull image
     docker pull $DOCKER_IMAGE
@@ -88,7 +83,7 @@ nginx::create(){
     docker service create \
         --hostname $DOCKER_HOSTNAME \
         --mount type=bind,source=$NGINX_HOME,destination=/etc/nginx/conf.d \
-        --name $DOCKER_SERVICE_NAME \
+        --name global_nginx \
         --network web-network \
         --replicas $DOCKER_REPLICAS \
         $DOCKER_LOG_OPTIONS \
@@ -96,12 +91,19 @@ nginx::create(){
         $DOCKER_IMAGE;
 }
 
-nginx::info(){
-    abstract::web::info
-}
+#
+#
+#
+# nginx::info(){
+#     abstract::web::info
+# }
 
 nginx::remove(){
-    abstract::web::remove
+    env::update
+    docker service update $ENV_UPDATE global_nginx
+    sleep 1
+    # it is not enough to update the global_nginx-proxy service, we need to re-initiate the container(s) as well
+    docker ps -a | grep global_nginx | grep -v proxy | cut -f1 -d' ' | xargs docker rm -f
 }
 
 nginx::update(){
@@ -113,7 +115,7 @@ nginx::update(){
 ################################################################################
 
 #
-#
+# Create NGINX Proxy Service
 #
 nginx-proxy::create(){
     # pull image
@@ -132,7 +134,7 @@ nginx-proxy::create(){
         --mount type=bind,source=$NGINX_HOME_CERTBOT,destination=/etc/letsencrypt \
         --mount type=bind,source=$NGINX_HOME_QUBE,destination=/var/qubestash \
         --mount type=bind,source=$NGINX_HOME_SSL,destination=/etc/nginx/ssl \
-        --name $DOCKER_SERVICE_NAME \
+        --name global_nginx-proxy \
         --network web-network \
         --replicas $DOCKER_REPLICAS \
         $DOCKER_LOG_OPTIONS \
@@ -140,24 +142,28 @@ nginx-proxy::create(){
         $DOCKER_IMAGE;
 }
 
-nginx-proxy::info(){
-    abstract::web::info
-}
+#
+#
+#
+# nginx-proxy::info(){
+#     abstract::web::info
+# }
 
 #
-#
+# Remove NGINX Proxy Service
 #
 nginx-proxy::remove(){
-    abstract::web::remove
+    docker service rm global_nginx-proxy
 }
 
 #
-# Remove NGINX Proxy service
+# Update NGINX Proxy Service
 #
 nginx-proxy::update(){
+    env::update
     docker service update $ENV_UPDATE global_nginx-proxy
-    sleep 10
-    # it is not enough to update the global_nginx-proxy service, we need to re-initiate the containers as well
+    sleep 1
+    # it is not enough to update the global_nginx-proxy service, we need to re-initiate the container(s) as well
     docker ps -a | grep global_nginx-proxy | cut -f1 -d' ' | xargs docker rm -f
 }
 
@@ -174,7 +180,7 @@ varnish::create(){
     # create config
     bash $HERE/varnish.vcl.sh > $VARNISH_HOME/config.vcl
     # service create
-    DOCKER_ADDITIONAL_CREATE="$DOCKER_ADDITIONAL_CREATE \
+    export DOCKER_ADDITIONAL_CREATE="$DOCKER_ADDITIONAL_CREATE \
         --env VCL_USE_CONFIG=yes \
         --mount type=bind,source=$VARNISH_HOME/config.vcl,destination=/etc/varnish/default.vcl \
     ";
@@ -192,6 +198,7 @@ varnish::info(){
 # Varnish Instace Update
 #
 varnish::update(){
+    env::update
     docker service update $ENV_UPDATE global_varnish-cache
 }
 
@@ -199,29 +206,33 @@ varnish::update(){
 # Varnish Instance Remove
 #
 varnish::remove(){
-    abstract::web::remove
+    docker service rm global_varnish-cache
 }
 
 ###################################################################################################
 # http-html
 ###################################################################################################
 
-#
-# Add HTML Instance Mounts to Nginx
-#
-http-html::nginx::update() {
-    # create nginx conf
-    # 1 set application domain
-    # 2 set application html path
-    # 3 create nginx config file under ${domain}.conf
+http-html::nginx::conf() {
+    # domain.local sed will set the proper domain
+    # __ROOT__ set will set the proper site root
     cat $HERE/$NGINX_CONF \
         | sed -e "s/domain.local/$APPLICATION_TLD/g" \
         | sed -e "s/__ROOT__/\/var\/www\/html\/$(echo $APPLICATION_TLD | cut -f1 -d' ')/g" \
         > $NGINX_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
+}
 
+#
+# Add HTML Instance Mounts to Nginx
+#
+http-html::nginx::update() {
+    local destiContent=/var/www/html/$(echo $APPLICATION_TLD | cut -f1 -d' ')
+    # update nginx application conf
+    http-html::nginx::conf
     # update nginx service with a new mount for the application
+    env::update
     docker service update \
-        --mount-add type=bind,source=$APPLICATION_HOME,destination=/var/www/html/$(echo $APPLICATION_TLD | cut -f1 -d' ') \
+        --mount-add type=bind,source=$APPLICATION_HOME,destination=$destiContent \
         $ENV_UPDATE \
         global_nginx
 }
@@ -234,6 +245,8 @@ http-html::nginx-proxy::update() {
     cat $HERE/global-nginx-proxy-https-only.conf \
         | sed -e "s/localhost/$APPLICATION_TLD/g" \
         > $NGINX_HOME_PROXY/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
+    # update nginx proxy
+    env::update
     nginx-proxy::update
 }
 
@@ -258,244 +271,45 @@ http-html::update() {
 # Remove Abstract Service
 #
 http-html::remove() {
+    local destiContent=/var/www/html/$(echo $APPLICATION_TLD | cut -f1 -d' ')
+    # remove nginx config
     rm -rf $NGINX_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
+    env::update
+    docker service update --mount-rm $destiContent $ENV_UPDATE global_nginx
+    # remove nginx-proxy config
     rm -rf $NGINX_HOME_PROXY/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
-    docker service update --mount-rm /var/www/html/$(echo $APPLICATION_TLD | cut -f1 -d' ') $ENV_UPDATE global_nginx
-    varnish::update
     nginx-proxy::update
 }
 
 ################################################################################
-# Wordpress
+# php-fpm
 ################################################################################
 
 #
-# Add Joomla Instance Mounts to Nginx
+# Write NGINX Config for global_nginx service && php-fpm applicatiosns
 #
-joomla::nginx::update(){
-    # create nginx conf
-    # 1 set application domain
-    # 2 set application html path
-    # 3 create nginx config file under ${domain}.conf
+php-fpm::nginx::conf() {
+    # domain.local sed will set the proper domain
+    # php.local sed is for php services only 
+    # __ROOT__ set will set the proper site root
     cat $HERE/$NGINX_CONF \
-        | sed -e "s/wordpress.local/$APPLICATION_TLD/g" \
+        | sed -e "s/domain.local/$APPLICATION_TLD/g" \
         | sed -e "s/php.local/$DOCKER_SERVICE_NAME/g" \
-        | sed -e "s/__ROOT__/\/usr\/src\/wordpress\/$DOCKER_SERVICE_NAME/g" \
+        | sed -e "s/__ROOT__/\/usr\/src\/${1:-html}\/$DOCKER_SERVICE_NAME/g" \
         > $NGINX_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
-  
-    while [ "$(abstract::php-fpm::test-running)" != "0" ]; do
-        echo "Waiting for Wordpress & php-fpm to start";
-        sleep 10
-    done
-
-    # update nginx
-    local soureJContent=$APPLICATION_HOME
-    local destiJContent=/usr/src/joomla/$DOCKER_SERVICE_NAME
-    docker service update \
-        --mount-add type=bind,source=$soureJContent/themes,destination=$destiJContent \
-        $ENV_UPDATE \
-        global_nginx
 }
 
 #
-# Add Joomla Instance to NGINX Proxy
+# Test whether a php-fpm container has properly started.
 #
-joomla::nginx-proxy::update(){
-    http-html::nginx-proxy::update
-}
+php-fpm::test-running(){
+    docker ps -a | grep -v Exited | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" > /dev/null || echo 1
 
-#
-# Start/Create Joomla Instance
-#
-joomla::create(){
-    local soureJContent=$APPLICATION_HOME
-    local destiJContent=/usr/src/joomla/$DOCKER_SERVICE_NAME
-    # default docker image
-    DOCKER_IMAGE=${DOCKER_IMAGE:-php:fpm-alpine}
-    # pull image
-    docker pull $DOCKER_IMAGE
-    # create volume
-    docker volume create --name $DOCKER_SERVICE_NAME
-    docker service create \
-        --env JOOMLA_MYSQL_DB=$JOOMLA_MYSQL_DB \
-        --env JOOMLA_MYSQL_USER=$JOOMLA_MYSQL_USER \
-        --env JOOMLA_MYSQL_PASS=$JOOMLA_MYSQL_PASS \
-        --env JOOMLA_MYSQL_HOST=$JOOMLA_MYSQL_HOST \
-        --env SQL_1="mysql -u$JOOMLA_MYSQL_USER -p$JOOMLA_MYSQL_PASS -h$JOOMLA_MYSQL_HOST" \
-        --env SQL_2="CREATE USER IF NOT EXISTS $JOOMLA_MYSQL_USER@'%' IDENTIFIED BY '$JOOMLA_MYSQL_PASS'" \
-        --env SQL_3="CREATE DATABASE IF NOT EXISTS $JOOMLA_MYSQL_DB" \
-        --env SQL_4="GRANT ALL PRIVILEGES ON $WORDPRESS_MYSQL_DB.* TO '$JOOMLA_MYSQL_USER'@'%'" \
-        --env SQL_5="ALTER USER $JOOMLA_MYSQL_USER@'%' IDENTIFIED BY '$JOOMLA_MYSQL_PASS' " \
-        --hostname $DOCKER_HOSTNAME \
-        --name $DOCKER_SERVICE_NAME \
-        --network web-network \
-        --mount type=bind,source=$soureJContent,destination=$destiJContent \
-        --mount type=bind,source=/etc/timezone,destination=/etc/timezone \
-        --mount type=bind,source=/etc/localtime,destination=/etc/localtime \
-        --replicas $DOCKER_REPLICAS \
-        $DOCKER_LOG_OPTIONS \
-        $DOCKER_ADDITIONAL_CREATE \
-        $DOCKER_IMAGE
+    docker ps -a | grep -v Exited \
+        | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" | awk -F" " '{print $NF}' \
+        | while read container; do
+            docker logs $container 2>&1 | grep "NOTICE: fpm is running" > /dev/null || echo 2
+        done
 
-    wordpress::nginx::update
-    varnish::update
-    joomla::nginx-proxy::update  
-}
-
-#
-# Update Joomla Instance
-#
-joomla::update(){
-    # update service
-    abstract::web::update
-    # update nginx
-    joomla::nginx::update
-    # update varnis
-    varnish::update
-    # update nginx-proxy
-    joomla::nginx-proxy::update
-}
-
-#
-# Remove Joomla Instance
-#
-joomla::remove(){
-    # remove joomla service
-    abstract::web::remove
-
-    # remove nginx config file
-    rm -rf $NGINX_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
-    # update nginx
-    docker service update \
-        $ENV_UPDATE \
-        --mount-rm /usr/src/joomla/$DOCKER_SERVICE_NAME \
-        global_nginx
-
-    # remove nginx-proxy config file
-    rm -rf $NGINX_HOME_PROXY/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
-    joomla::nginx-proxy::update
-}
-
-
-################################################################################
-# Wordpress
-################################################################################
-
-#
-# Add Wordpress Instance Mounts to Nginx
-#
-wordpress::nginx::update(){
-    # create nginx conf
-    # 1 set application domain
-    # 2 set application html path
-    # 3 create nginx config file under ${domain}.conf
-    cat $HERE/$NGINX_CONF \
-        | sed -e "s/wordpress.local/$APPLICATION_TLD/g" \
-        | sed -e "s/php.local/$DOCKER_SERVICE_NAME/g" \
-        | sed -e "s/__ROOT__/\/usr\/src\/wordpress\/$DOCKER_SERVICE_NAME/g" \
-        > $NGINX_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
-  
-    while [ "$(abstract::php-fpm::test-running)" != "0" ]; do
-        echo "Waiting for Wordpress & php-fpm to start";
-        sleep 10
-    done
-
-    # update nginx
-    local soureWPContent=$APPLICATION_HOME/wp-content
-    local destiWpContent=/usr/src/wordpress/$DOCKER_SERVICE_NAME
-    docker service update \
-        --mount-add type=volume,source=$DOCKER_SERVICE_NAME,destination=$destiWpContent \
-        --mount-add type=bind,source=$soureWPContent/themes,destination=$destiWpContent/wp-content/themes \
-        --mount-add type=bind,source=$soureWPContent/uploads,destination=$destiWpContent/wp-content/uploads \
-        $ENV_UPDATE \
-        global_nginx
-}
-
-#
-# Add Wordpress Instance to NGINX Proxy
-#
-wordpress::nginx-proxy::update(){
-    http-html::nginx-proxy::update
-}
-
-#
-# Start/Create Wordpress Instance
-#
-wordpress::create(){
-    # pull image
-    docker pull $DOCKER_IMAGE
-    # create volume
-    docker volume create --name $DOCKER_SERVICE_NAME
-    docker service create \
-        --env WORDPRESS_DOMAIN_PROTO=$WORDPRESS_DOMAIN_PROTO \
-        --env WORDPRESS_MYSQL_DB=$WORDPRESS_MYSQL_DB \
-        --env WORDPRESS_MYSQL_USER=$WORDPRESS_MYSQL_USER \
-        --env WORDPRESS_MYSQL_PASS=$WORDPRESS_MYSQL_PASS \
-        --env WORDPRESS_MYSQL_HOST=$WORDPRESS_MYSQL_HOST \
-        --env WORDPRESS_TABLE_PREFIX=$WORDPRESS_TABLE_PREFIX \
-        --env WORDPRESS_PLUGINS="$WORDPRESS_PLUGINS" \
-        --env SQL_1="mysql -u$WORDPRESS_MYSQL_USER -p$WORDPRESS_MYSQL_PASS -h$WORDPRESS_MYSQL_HOST" \
-        --env SQL_2="CREATE USER IF NOT EXISTS $WORDPRESS_MYSQL_USER@'%' IDENTIFIED BY '$WORDPRESS_MYSQL_PASS'" \
-        --env SQL_3="CREATE DATABASE IF NOT EXISTS $WORDPRESS_MYSQL_DB" \
-        --env SQL_4="GRANT ALL PRIVILEGES ON $WORDPRESS_MYSQL_DB.* TO '$WORDPRESS_MYSQL_USER'@'%'" \
-        --env SQL_5="ALTER USER $WORDPRESS_MYSQL_USER@'%' IDENTIFIED BY '$WORDPRESS_MYSQL_PASS' " \
-        --hostname $DOCKER_HOSTNAME \
-        --name $DOCKER_SERVICE_NAME \
-        --network web-network \
-        --mount type=volume,source=$DOCKER_SERVICE_NAME,destination=/usr/src/wordpress \
-        --mount type=bind,source=$APPLICATION_HOME/wp-content/themes,destination=/usr/src/wordpress/wp-content/themes \
-        --mount type=bind,source=$APPLICATION_HOME/wp-content/uploads,destination=/usr/src/wordpress/wp-content/uploads \
-        --replicas $DOCKER_REPLICAS \
-        $DOCKER_LOG_OPTIONS \
-        $DOCKER_ADDITIONAL_CREATE \
-        $DOCKER_IMAGE
-
-    wordpress::nginx::update
-    varnish::update
-    wordpress::nginx-proxy::update  
-}
-
-#
-# Update Wordpress Instance
-#
-wordpress::update(){
-    # update service
-    docker service update \
-        $ENV_UPDATE \
-        --image $DOCKER_IMAGE \
-        --mount-add type=bind,source=$APPLICATION_HOME/wp-content/themes,destination=/usr/src/wordpress/wp-content/themes \
-        --mount-add type=bind,source=$APPLICATION_HOME/wp-content/uploads,destination=/usr/src/wordpress/wp-content/uploads \
-        --replicas $DOCKER_REPLICAS \
-        $DOCKER_ADDITIONAL_UPDATE \
-        $DOCKER_SERVICE_NAME
-
-    wordpress::nginx::update
-    varnish::update
-    wordpress::nginx-proxy::update  
-}
-
-#
-# Remove Wordpress Instance
-#
-wordpress::remove(){
-    # remove wordpress service
-    abstract::web::remove
-
-    # remove nginx config file
-    rm -rf $NGINX_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
-    # update nginx
-    docker service update \
-        $ENV_UPDATE \
-        --mount-rm /usr/src/wordpress/$DOCKER_SERVICE_NAME/wp-content/themes \
-        --mount-rm /usr/src/wordpress/$DOCKER_SERVICE_NAME/wp-content/uploads \
-        --mount-rm /usr/src/wordpress/$DOCKER_SERVICE_NAME \
-        global_nginx
-
-    # remove nginx-proxy config file
-    rm -rf $NGINX_HOME_PROXY/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
-    docker service update $ENV_UPDATE global_nginx-proxy
-
-    # remove wordpress volume
-    # sleep 10
-    # docker volume rm $DOCKER_SERVICE_NAME
+    echo 0
 }

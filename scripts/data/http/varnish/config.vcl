@@ -2,107 +2,9 @@ vcl 4.0;
 import directors;    # load the directors
 
 # Define the list of backends (web servers).
+
 backend web1 {
-    .host = "10.0.9.4"; # /global_nginx.1.4ov1ss8l64ldsldnypukounrt automated discovery
-    .port = "80";
-    .probe = {
-        .url = "/";
-        .timeout = 1s;
-        .interval = 5s;
-        .window = 5;
-        .threshold = 3;
-    }
-}
-backend web2 {
-    .host = "10.0.9.5"; # /global_nginx.2.yfgxgwnfxcr1xkf9nyq3m4g6f automated discovery
-    .port = "80";
-    .probe = {
-        .url = "/";
-        .timeout = 1s;
-        .interval = 5s;
-        .window = 5;
-        .threshold = 3;
-    }
-}
-backend web3 {
-    .host = ""; # /global_nginx.2.56aa5yp2odbrtbk0dolp4j0og automated discovery
-    .port = "80";
-    .probe = {
-        .url = "/";
-        .timeout = 1s;
-        .interval = 5s;
-        .window = 5;
-        .threshold = 3;
-    }
-}
-backend web4 {
-    .host = ""; # /global_nginx.1.75bm64qk9e0oxn3yzlktciz6v automated discovery
-    .port = "80";
-    .probe = {
-        .url = "/";
-        .timeout = 1s;
-        .interval = 5s;
-        .window = 5;
-        .threshold = 3;
-    }
-}
-backend web5 {
-    .host = ""; # /global_nginx.2.uu98bpg48qag3hiaefjx3d4ii automated discovery
-    .port = "80";
-    .probe = {
-        .url = "/";
-        .timeout = 1s;
-        .interval = 5s;
-        .window = 5;
-        .threshold = 3;
-    }
-}
-backend web6 {
-    .host = ""; # /global_nginx.1.r5nskdayivw1q3pqy6xacnuh8 automated discovery
-    .port = "80";
-    .probe = {
-        .url = "/";
-        .timeout = 1s;
-        .interval = 5s;
-        .window = 5;
-        .threshold = 3;
-    }
-}
-backend web7 {
-    .host = ""; # /global_nginx.2.egicoat4052m0harte1b9ueem automated discovery
-    .port = "80";
-    .probe = {
-        .url = "/";
-        .timeout = 1s;
-        .interval = 5s;
-        .window = 5;
-        .threshold = 3;
-    }
-}
-backend web8 {
-    .host = ""; # /global_nginx.1.9frm1xs69jr9nscqwkl59j8g2 automated discovery
-    .port = "80";
-    .probe = {
-        .url = "/";
-        .timeout = 1s;
-        .interval = 5s;
-        .window = 5;
-        .threshold = 3;
-    }
-}
-backend web9 {
-    .host = ""; # /global_nginx.2.ku5w6ujqsyf5n6xg1d2bgg4i2 automated discovery
-    .port = "80";
-    .probe = {
-        .url = "/";
-        .timeout = 1s;
-        .interval = 5s;
-        .window = 5;
-        .threshold = 3;
-    }
-}
-backend web10 {
-    .host = ""; # /global_nginx.1.cwtpsrjrhi2g16z4oj6t7x185 automated discovery
+    .host = "global_nginx";
     .port = "80";
     .probe = {
         .url = "/";
@@ -113,21 +15,13 @@ backend web10 {
     }
 }
 
-# 10 hosts discovered
+
+# 0 hosts discovered
 
 # Define the director that determines how to distribute incoming requests.
 sub vcl_init {
     new bar = directors.round_robin();
     bar.add_backend(web1);
-    bar.add_backend(web2);
-    bar.add_backend(web3);
-    bar.add_backend(web4);
-    bar.add_backend(web5);
-    bar.add_backend(web6);
-    bar.add_backend(web7);
-    bar.add_backend(web8);
-    bar.add_backend(web9);
-    bar.add_backend(web10);
 }
 
 # Respond to incoming requests.
