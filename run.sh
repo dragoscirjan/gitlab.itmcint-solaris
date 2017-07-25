@@ -1,6 +1,10 @@
 #! /bin/bash
 set -xe 
 
+# fix resolv.conf @ reboot
+# @TODO: Why does Debian 9 remove this file ? 
+{ echo "nameserver 8.8.8.8"; echo "nameserver 8.8.8.8"; echo "search syrius" } > /etc/resolv.conf
+
 PREFIX=solaris
 
 apt-get update && apt-get install -y wget
@@ -11,6 +15,8 @@ docker ps -a | grep registry && {
   docker ps -a | grep registry | cut -f1 -d' ' | xargs docker stop || true
   docker ps -a | grep registry | cut -f1 -d' ' | xargs docker start || true
 }
+
+service docker restart
 
 docker ps -a | grep registry || docker run -d -p 5000:5000 \
   --restart=always \
