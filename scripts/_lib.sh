@@ -62,6 +62,21 @@ abstract::web::remove(){
     docker service rm $serviceName || true
 }
 
+#
+# Test whether a php-fpm container has properly started.
+#
+abstract::php-fpm::test-running(){
+    docker ps -a | grep -v Exited | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" > /dev/null || echo 1
+
+    docker ps -a | grep -v Exited \
+        | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" | awk -F" " '{print $NF}' \
+        | while read container; do
+            docker logs $container 2>&1 | grep "NOTICE: fpm is running" > /dev/null || echo 2
+        done
+
+    echo 0
+}
+
 ################################################################################
 # NGINX
 ################################################################################
@@ -141,6 +156,9 @@ nginx-proxy::remove(){
 #
 nginx-proxy::update(){
     docker service update $ENV_UPDATE global_nginx-proxy
+    sleep 10
+    # it is not enough to update the global_nginx-proxy service, we need to re-initiate the containers as well
+    docker ps -a | grep global_nginx-proxy | cut -f1 -d' ' | xargs docker rm -f
 }
 
 ################################################################################
@@ -252,6 +270,118 @@ http-html::remove() {
 ################################################################################
 
 #
+# Add Joomla Instance Mounts to Nginx
+#
+joomla::nginx::update(){
+    # create nginx conf
+    # 1 set application domain
+    # 2 set application html path
+    # 3 create nginx config file under ${domain}.conf
+    cat $HERE/$NGINX_CONF \
+        | sed -e "s/wordpress.local/$APPLICATION_TLD/g" \
+        | sed -e "s/php.local/$DOCKER_SERVICE_NAME/g" \
+        | sed -e "s/__ROOT__/\/usr\/src\/wordpress\/$DOCKER_SERVICE_NAME/g" \
+        > $NGINX_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
+  
+    while [ "$(abstract::php-fpm::test-running)" != "0" ]; do
+        echo "Waiting for Wordpress & php-fpm to start";
+        sleep 10
+    done
+
+    # update nginx
+    local soureJContent=$APPLICATION_HOME
+    local destiJContent=/usr/src/joomla/$DOCKER_SERVICE_NAME
+    docker service update \
+        --mount-add type=bind,source=$soureJContent/themes,destination=$destiJContent \
+        $ENV_UPDATE \
+        global_nginx
+}
+
+#
+# Add Joomla Instance to NGINX Proxy
+#
+joomla::nginx-proxy::update(){
+    http-html::nginx-proxy::update
+}
+
+#
+# Start/Create Joomla Instance
+#
+joomla::create(){
+    local soureJContent=$APPLICATION_HOME
+    local destiJContent=/usr/src/joomla/$DOCKER_SERVICE_NAME
+    # default docker image
+    DOCKER_IMAGE=${DOCKER_IMAGE:-php:fpm-alpine}
+    # pull image
+    docker pull $DOCKER_IMAGE
+    # create volume
+    docker volume create --name $DOCKER_SERVICE_NAME
+    docker service create \
+        --env JOOMLA_MYSQL_DB=$JOOMLA_MYSQL_DB \
+        --env JOOMLA_MYSQL_USER=$JOOMLA_MYSQL_USER \
+        --env JOOMLA_MYSQL_PASS=$JOOMLA_MYSQL_PASS \
+        --env JOOMLA_MYSQL_HOST=$JOOMLA_MYSQL_HOST \
+        --env SQL_1="mysql -u$JOOMLA_MYSQL_USER -p$JOOMLA_MYSQL_PASS -h$JOOMLA_MYSQL_HOST" \
+        --env SQL_2="CREATE USER IF NOT EXISTS $JOOMLA_MYSQL_USER@'%' IDENTIFIED BY '$JOOMLA_MYSQL_PASS'" \
+        --env SQL_3="CREATE DATABASE IF NOT EXISTS $JOOMLA_MYSQL_DB" \
+        --env SQL_4="GRANT ALL PRIVILEGES ON $WORDPRESS_MYSQL_DB.* TO '$JOOMLA_MYSQL_USER'@'%'" \
+        --env SQL_5="ALTER USER $JOOMLA_MYSQL_USER@'%' IDENTIFIED BY '$JOOMLA_MYSQL_PASS' " \
+        --hostname $DOCKER_HOSTNAME \
+        --name $DOCKER_SERVICE_NAME \
+        --network web-network \
+        --mount type=bind,source=$soureJContent,destination=$destiJContent \
+        --mount type=bind,source=/etc/timezone,destination=/etc/timezone \
+        --mount type=bind,source=/etc/localtime,destination=/etc/localtime \
+        --replicas $DOCKER_REPLICAS \
+        $DOCKER_LOG_OPTIONS \
+        $DOCKER_ADDITIONAL_CREATE \
+        $DOCKER_IMAGE
+
+    wordpress::nginx::update
+    varnish::update
+    joomla::nginx-proxy::update  
+}
+
+#
+# Update Joomla Instance
+#
+joomla::update(){
+    # update service
+    abstract::web::update
+    # update nginx
+    joomla::nginx::update
+    # update varnis
+    varnish::update
+    # update nginx-proxy
+    joomla::nginx-proxy::update
+}
+
+#
+# Remove Joomla Instance
+#
+joomla::remove(){
+    # remove joomla service
+    abstract::web::remove
+
+    # remove nginx config file
+    rm -rf $NGINX_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
+    # update nginx
+    docker service update \
+        $ENV_UPDATE \
+        --mount-rm /usr/src/joomla/$DOCKER_SERVICE_NAME \
+        global_nginx
+
+    # remove nginx-proxy config file
+    rm -rf $NGINX_HOME_PROXY/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
+    joomla::nginx-proxy::update
+}
+
+
+################################################################################
+# Wordpress
+################################################################################
+
+#
 # Add Wordpress Instance Mounts to Nginx
 #
 wordpress::nginx::update(){
@@ -265,7 +395,7 @@ wordpress::nginx::update(){
         | sed -e "s/__ROOT__/\/usr\/src\/wordpress\/$DOCKER_SERVICE_NAME/g" \
         > $NGINX_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
   
-    while [ "$(wordpress::test-running)" != "0" ]; do
+    while [ "$(abstract::php-fpm::test-running)" != "0" ]; do
         echo "Waiting for Wordpress & php-fpm to start";
         sleep 10
     done
@@ -342,21 +472,6 @@ wordpress::update(){
     wordpress::nginx::update
     varnish::update
     wordpress::nginx-proxy::update  
-}
-
-#
-#
-#
-wordpress::test-running(){
-    docker ps -a | grep -v Exited | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" > /dev/null || echo 1
-
-    docker ps -a | grep -v Exited \
-        | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" | awk -F" " '{print $NF}' \
-        | while read container; do
-            docker logs $container 2>&1 | grep "NOTICE: fpm is running" > /dev/null || echo 2
-        done
-
-    echo 0
 }
 
 #

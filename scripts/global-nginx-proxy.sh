@@ -50,7 +50,6 @@ fi
 #
 # create/update
 #
-docker pull $DOCKER_IMAGE
 if docker service ls | grep $DOCKER_SERVICE_NAME; then
     nginx-proxy::update
 else
