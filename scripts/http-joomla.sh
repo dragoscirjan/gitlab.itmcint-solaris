@@ -29,11 +29,6 @@ JOOMLA_MYSQL_HOST=${JOOMLA_MYSQL_HOST:-global_mysql}
 
 . $HERE/_init.sh
 
-docker-ip() {
-    docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' \
-        $(docker ps -a | grep $DOCKER_SERVICE_NAME\. | cut -f1 -d' ');
-}
-
 APPLICATION_HOME=${APPLICATION_HOME:-$HERE/data/sites/$DOCKER_HOSTNAME}
 
 NGINX_HOME=${NGINX_HOME:-$HERE/data/http/nginx}
@@ -41,7 +36,8 @@ NGINX_CONF=http-joomla.conf
 NGINX_HOME_PROXY=${NGINX_HOME_PROXY:-$HERE/data/http/nginx-proxy}
 
 mkdir -p $APPLICATION_HOME
-
+find $APPLICATION_HOME -not -iname "*.git*" -type f -exec chmod -R 644 {} \;
+find $APPLICATION_HOME -not -iname "*.git*" -type d -exec chmod -R 555 {} \;
 
 #
 # remove directive

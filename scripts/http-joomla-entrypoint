@@ -4,6 +4,7 @@ buildDeps="\
         .build-deps \
         libjpeg-turbo-dev \
         libpng-dev \
+        libmcrypt \
         pcre-dev \
 "
 
