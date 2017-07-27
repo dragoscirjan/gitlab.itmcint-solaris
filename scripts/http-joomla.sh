@@ -36,8 +36,6 @@ NGINX_CONF=http-joomla.conf
 NGINX_HOME_PROXY=${NGINX_HOME_PROXY:-$HERE/data/http/nginx-proxy}
 
 mkdir -p $APPLICATION_HOME
-find $APPLICATION_HOME -not -iname "*.git*" -type f -exec chmod -R 644 {} \;
-find $APPLICATION_HOME -not -iname "*.git*" -type d -exec chmod -R 555 {} \;
 
 #
 # remove directive
