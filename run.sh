@@ -8,7 +8,7 @@ set -xe
 PREFIX=solaris
 
 apt-get update && apt-get install -y wget
-which docker || wget -q -O - https://get.docker.com | bash
+# which docker || wget -q -O - https://get.docker.com | bash
 
 # https://docs.docker.com/registry/deploying/
 docker ps -a | grep registry && {
@@ -16,7 +16,7 @@ docker ps -a | grep registry && {
   docker ps -a | grep registry | cut -f1 -d' ' | xargs docker start || true
 }
 
-service docker restart
+# service docker restart
 
 docker ps -a | grep registry || docker run -d -p 5000:5000 \
   --restart=always \
@@ -39,7 +39,7 @@ mkdir -p $JENKINS_HOME/.ssh;
 chown -R 1000:1000 $JENKINS_HOME
 
 # docker run \
-docker run -p $((8000 + $(date +%d) + $(date +%m))):8080 \
+docker run -p $((8000 + $(date +%d | sed -e "s/^0\+//g") + $(date +%m | sed -e "s/^0\+//g"))):8080 \
   --restart=always \
   -e JENKINS_INSTALL_PLUGINS='simple-theme-plugin publish-over-ssh' \
   -v $JENKINS_HOME:/var/jenkins_home \
