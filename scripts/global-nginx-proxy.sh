@@ -32,7 +32,7 @@ if echo $* | grep "dev"; then
 	"
 fi
 
-if echo $* | grep "--publish"; then
+if echo $* | grep "publish"; then
 	export DOCKER_ADDITIONAL_CREATE="$DOCKER_ADDITIONAL_CREATE --publish 80:80 --publish 443:443 --env NGINX_DEBUG=yes"
 	export DOCKER_ADDITIONAL_UPDATE="$DOCKER_ADDITIONAL_UPDATE --publish 80:80 --publish 443:443 --env NGINX_DEBUG=yes"
 fi
@@ -58,4 +58,4 @@ fi
 
 sleep 20;
 
-nginx-proxy::info
+# nginx-proxy::info
