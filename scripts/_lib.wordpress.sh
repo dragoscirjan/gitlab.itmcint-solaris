@@ -40,7 +40,7 @@ wordpress::nginx::update() {
 #
 wordpress::create() {
     local soureWPContent=$APPLICATION_HOME/wp-content
-    local destiWpContent=/usr/src/wordpress/$DOCKER_SERVICE_NAME
+    local destiWpContent=/usr/src/wordpress
     # pull image
     docker pull $DOCKER_IMAGE
     # create volume
@@ -54,6 +54,7 @@ wordpress::create() {
         --env WORDPRESS_MYSQL_HOST=$WORDPRESS_MYSQL_HOST \
         --env WORDPRESS_TABLE_PREFIX=$WORDPRESS_TABLE_PREFIX \
         --env WORDPRESS_PLUGINS="$WORDPRESS_PLUGINS" \
+        --env WORDPRESS_USE_EXTERNAL_VOLUME=yes \
         --env SQL_1="mysql -u$WORDPRESS_MYSQL_USER -p$WORDPRESS_MYSQL_PASS -h$WORDPRESS_MYSQL_HOST" \
         --env SQL_2="CREATE USER IF NOT EXISTS $WORDPRESS_MYSQL_USER@'%' IDENTIFIED BY '$WORDPRESS_MYSQL_PASS'" \
         --env SQL_3="CREATE DATABASE IF NOT EXISTS $WORDPRESS_MYSQL_DB" \
@@ -82,7 +83,7 @@ wordpress::update() {
     # update service
     abstract::web::update
     # update serving system
-    joomla::nginx::update
+    wordpress::nginx::update
     varnish::update
     http-html::nginx-proxy::update
 }

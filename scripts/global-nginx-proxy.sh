@@ -25,16 +25,18 @@ if echo $* | grep "dev"; then
 	export DOCKER_ADDITIONAL_UPDATE=" \
 		$DOCKER_ADDITIONAL_UPDATE \
 		--mount-add type=bind,source=/home/dragosc/Workspace/QubeStash/http-nginx/scripts/nginx-certbot,destination=/nginx-certbot \
+		--env-add NGINX_DEBUG=no \
 	"
 	export DOCKER_ADDITIONAL_CREATE=" \
 		$DOCKER_ADDITIONAL_CREATE \
 		--mount type=bind,source=/home/dragosc/Workspace/QubeStash/http-nginx/scripts/nginx-certbot,destination=/nginx-certbot \
+		--env NGINX_DEBUG=no \
 	"
 fi
 
 if echo $* | grep "publish"; then
-	export DOCKER_ADDITIONAL_CREATE="$DOCKER_ADDITIONAL_CREATE --publish 80:80 --publish 443:443 --env NGINX_DEBUG=yes"
-	export DOCKER_ADDITIONAL_UPDATE="$DOCKER_ADDITIONAL_UPDATE --publish 80:80 --publish 443:443 --env NGINX_DEBUG=yes"
+	export DOCKER_ADDITIONAL_CREATE="$DOCKER_ADDITIONAL_CREATE --publish 80:80 --publish 443:443"
+	export DOCKER_ADDITIONAL_UPDATE="$DOCKER_ADDITIONAL_UPDATE --publish 80:80 --publish 443:443"
 fi
 
 #
