@@ -292,6 +292,7 @@ php-fpm::nginx::conf() {
     # domain.local sed will set the proper domain
     # php.local sed is for php services only 
     # __ROOT__ set will set the proper site root
+    echo $NGINX_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
     cat $HERE/$NGINX_CONF \
         | sed -e "s/domain.local/$APPLICATION_TLD/g" \
         | sed -e "s/php.local/$DOCKER_SERVICE_NAME/g" \
