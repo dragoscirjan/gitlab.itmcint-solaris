@@ -40,7 +40,7 @@ docker-ip() {
 APPLICATION_HOME=${APPLICATION_HOME:-$HERE/data/sites/$DOCKER_HOSTNAME}
 
 NGINX_HOME=${NGINX_HOME:-$HERE/data/http/nginx}
-NGINX_CONF=http-wordpress.conf
+NGINX_CONF=${NGINX_CONF:-http-wordpress.conf}
 NGINX_HOME_PROXY=${NGINX_HOME_PROXY:-$HERE/data/http/nginx-proxy}
 
 mkdir -p $APPLICATION_HOME/wp-content/plugins $APPLICATION_HOME/wp-content/themes $APPLICATION_HOME/wp-content/uploads
