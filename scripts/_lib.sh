@@ -293,7 +293,8 @@ php-fpm::nginx::conf() {
     # php.local sed is for php services only 
     # __ROOT__ set will set the proper site root
     echo $NGINX_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
-    cat $HERE/$NGINX_CONF \
+    [ -f $NGINX_CONF ] || NGINX_CONF=$HERE/$NGINX_CONF
+    cat $NGINX_CONF \
         | sed -e "s/domain.local/$APPLICATION_TLD/g" \
         | sed -e "s/php.local/$DOCKER_SERVICE_NAME/g" \
         | sed -e "s/__ROOT__/\/usr\/src\/${1:-html}\/$DOCKER_SERVICE_NAME/g" \
