@@ -91,7 +91,7 @@ wordpress::update() {
 # Remove Wordpress Instance
 #
 wordpress::remove() {
-    local destiWPContent=/usr/src/joomla/$DOCKER_SERVICE_NAME
+    local destiWPContent=/usr/src/wordpress/$DOCKER_SERVICE_NAME
     # remove wordpress service
     abstract::web::remove
     # update nginx
