@@ -99,9 +99,9 @@ wordpress::remove() {
     env::update
     docker service update \
         $ENV_UPDATE \
-        --mount-rm $destiWpContent/wp-content/themes \
-        --mount-rm $destiWpContent/wp-content/uploads \
-        --mount-rm $destiWpContent \
+        --mount-rm $destiWPContent/wp-content/themes \
+        --mount-rm $destiWPContent/wp-content/uploads \
+        --mount-rm $destiWPContent \
         global_nginx
     # remove nginx-proxy config file
     rm -rf $NGINX_HOME_PROXY/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
