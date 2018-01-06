@@ -1,6 +1,6 @@
 #! /bin/bash
 
-docker service rm global_nginx-proxy
+docker service rm global_nginx-proxy || true
 sleep 10
 
 docker ps -a | grep global_nginx-proxy && exit 100
