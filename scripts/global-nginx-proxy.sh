@@ -7,7 +7,8 @@ HERE="`dirname "$WRAPPER"`"
 . $HERE/_init.sh
 
 DOCKER_HOSTNAME=${DOCKER_HOSTNAME:-nginx-proxy.local};
-DOCKER_IMAGE=${DOCKER_IMAGE:-qubestash/nginx:alpine};
+# DOCKER_IMAGE=${DOCKER_IMAGE:-qubestash/nginx:alpine}; qubestash/nginx is discontinued
+DOCKER_IMAGE=${DOCKER_IMAGE:-nginx/nginx:alpine};
 DOCKER_LOG_OPTIONS=${DOCKER_LOG_OPTIONS:- --log-driver json-file --log-opt max-size=10m --log-opt max-file=3};
 DOCKER_REPLICAS=${DOCKER_REPLICAS:-1};
 DOCKER_SERVICE_NAME=${DOCKER_SERVICE_NAME:-global_nginx-proxy};
