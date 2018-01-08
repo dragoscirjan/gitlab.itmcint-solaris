@@ -12,18 +12,19 @@ DOMAIN_FILE="/tmp/domains.txt"
 
 cat > $DOMAIN_FILE <<DOMAINS
 # Andrei Ruse
-arthouselucrezia.ro
-hyperliteratura.ro
+andreiruse.ro www.andreiruse.ro
+arthouselucrezia.ro www.arthouselucrezia.ro
+hyperliteratura.ro www.hyperliteratura.ro
 # Stefan Mitran
-casacontelui.ro
-confort-morosanu.ro
-karizma.ro
-tninvest.ro
+casacontelui.ro www.casacontelui.ro
+confort-morosanu.ro www.confort-morosanu.ro
+karizma.ro www.karizma.ro
+tninvest.ro www.tninvest.ro
 # Ionut Caragea
-aslrq.ro
-ionutcaragea.ro
+aslrq.ro www.aslrq.ro
+ionutcaragea.ro www.ionutcaragea.ro
 # Punct Art
-punctart.ro
+punctart.ro www.punctart.ro
 # Dragos Cirjan
 # "lunaticthinker.me"
 # IT Media Connect
