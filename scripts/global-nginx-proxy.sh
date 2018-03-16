@@ -44,7 +44,7 @@ fi
 # remove directive
 #
 if echo $* | grep "remove"; then
-    nginx-proxy::remove
+    nginx-proxy::remove || true
 fi
 if echo $* | grep "remove-only"; then
     exit 0

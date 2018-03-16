@@ -6,7 +6,7 @@ sleep 10
 docker ps -a | grep global_nginx-proxy && exit 100
 
 #CERTBOT_DEV_OPTIONS="--dry-run --quiet"
-CERTBOT_OPTIONS="--force-renewal --standalone --agree-tos $CERTBOT_DEV_OPTIONS --email office@itmediaconnect.ro"
+CERTBOT_OPTIONS="--non-interactive --force-renewal --standalone --agree-tos $CERTBOT_DEV_OPTIONS --email office@itmediaconnect.ro"
 
 DOMAIN_FILE="/tmp/domains.txt"
 
