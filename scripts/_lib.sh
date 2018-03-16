@@ -242,9 +242,9 @@ http-html::nginx::update() {
 #
 http-html::nginx-proxy::update() {
     # create nginx-proxy conf
-    cat $HERE/global-nginx-proxy-https-only.conf \
-        | sed -e "s/localhost/$APPLICATION_TLD/g" \
-        > $NGINX_HOME_PROXY/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
+    # cat $HERE/global-nginx-proxy-https-only.conf \
+    #     | sed -e "s/localhost/$APPLICATION_TLD/g" \
+    #     > $NGINX_HOME_PROXY/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
     # update nginx proxy
     env::update
     nginx-proxy::update
