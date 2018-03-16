@@ -9,34 +9,30 @@ HERE="`dirname "$WRAPPER"`"
 DOCKER_HOSTNAME=${DOCKER_HOSTNAME:-nginx.local};
 DOCKER_IMAGE=${DOCKER_IMAGE:-nginx:alpine};
 DOCKER_LOG_OPTIONS=${DOCKER_LOG_OPTIONS:- --log-driver json-file --log-opt max-size=10m --log-opt max-file=3};
-DOCKER_REPLICAS=${DOCKER_REPLICAS:-2};
+DOCKER_REPLICAS=${DOCKER_REPLICAS:-1};
 DOCKER_SERVICE_NAME=${DOCKER_SERVICE_NAME:-global_nginx};
+# DOCKER_ADDITIONAL_CREATE="--publish 80:80";
 
 NGINX_HOME=${NGINX_HOME:-$HERE/data/http/nginx};
 
-mkdir -p $NGINX_HOME;
+docker service rm $DOCKER_SERVICE_NAME || true
 
-#
-# remove directive
-#
-if echo $* | grep "remove"; then
-    # nginx::remove
-    abstract::web::remove
-fi
-if echo $* | grep "remove-only"; then
-    exit 0
-fi
+sleep 10
 
-#
-# create/update
-#
-if docker service ls | grep $DOCKER_SERVICE_NAME | grep -v proxy; then
-    # nginx::update
-    abstract::web::update
-else
-    nginx::create
-fi
+docker pull $DOCKER_IMAGE
 
-sleep 20;
+docker service create \
+  --hostname $DOCKER_HOSTNAME \
+  --mount type=bind,source=$NGINX_HOME,destination=/etc/nginx/conf.d \
+  --name $DOCKER_SERVICE_NAME \
+  --network web-network \
+  --replicas $DOCKER_REPLICAS \
+  $DOCKER_LOG_OPTIONS \
+  $DOCKER_ADDITIONAL_CREATE \
+  $DOCKER_IMAGE;
+  
+sleep 5
 
-nginx::info
+docker service ls
+
+docker service inspect $DOCKER_SERVICE_NAME
