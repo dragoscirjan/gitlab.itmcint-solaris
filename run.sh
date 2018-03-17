@@ -39,7 +39,7 @@ mkdir -p $JENKINS_HOME/.ssh, $JENKINS_HOME/ssl;
 cp /etc/letsencrypt/live/itmcd.ro/* $JENKINS_HOME/ssl;
 openssl rsa -in $JENKINS_HOME/ssl/privkey.pem -out $JENKINS_HOME/ssl/privkey-rsa.pem;
 
-WITH_SSL="-e JENKINS_OPTS='--httpPort=-1 --httpsPort=8080 --httpsCertificate=/var/jenkins_home/ssl/fullchain.pem --httpsPrivateKey=/var/jenkins_home/ssl/privkey.pem'"
+WITH_SSL="-e JENKINS_OPTS='--httpPort=-1 --httpsPort=8080 --httpsCertificate=/var/jenkins_home/ssl/fullchain.pem --httpsPrivateKey=/var/jenkins_home/ssl/privkey-rsa.pem'"
 
 [ -f $JENKINS_HOME/.ssh/id_rsa ] || ssh-keygen -b 2048 -t rsa -f $JENKINS_HOME/.ssh/id_rsa -q -N ""
 
