@@ -26,9 +26,8 @@ APPLICATION_NGINX_NAME=${APPLICATION_NGINX_NAME:-application_nginx_name}
 APPLICATION_CODEX_NAME=${APPLICATION_CODEX_NAME:-application_codex_name}
 
 NGINX_CONFIG_HOME=${NGINX_CONFIG_HOME:-$HERE/data/http/nginx}
-NGINX_CONFIG_BASE=${APPLICATION_NGINX_CONF:-http-html.conf}
-
 NGINX_PROXY_CONFIG_HOME=${NGINX_PROXY_CONFIG_HOME:-$HERE/data/http/nginx-proxy}
+# NGINX_PROXY_NAME=global_nginx-proxy
 
 #
 # Test whether a php-fpm container has properly started.

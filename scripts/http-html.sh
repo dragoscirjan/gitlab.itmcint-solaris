@@ -38,4 +38,7 @@ cat $HERE/global-nginx-proxy-https-only.conf \
 	| sed -e "s/global_nginx/$APPLICATION_NGINX_NAME/g" \
 	> $NGINX_PROXY_CONFIG_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
 
-bash global-nginx-proxy.sh
+# bash $HERE/global-nginx-proxy.sh
+docker service update \
+    --env-add UPDATE=$(date +%s.%N) \
+    $NGINX_PROXY_NAME

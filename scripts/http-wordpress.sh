@@ -22,6 +22,8 @@ WORDPRESS_MYSQL_HOST=${WORDPRESS_MYSQL_HOST:-global_mysql}
 WORDPRESS_TABLE_PREFIX=${WORDPRESS_TABLE_PREFIX:-wp}
 # WORDPRESS_PLUGINS=${WORDPRESS_PLUGINS:-};
 
+bash $HERE/http-html.sh
+
 docker service rm $APPLICATION_CODEX_NAME || true
 
 docker volume rm $APPLICATION_CODEX_NAME || true
@@ -37,8 +39,8 @@ docker volume create --name $APPLICATION_CODEX_NAME
 mkdir -p $APPLICATION_HOME/wp-content/plugins $APPLICATION_HOME/wp-content/themes $APPLICATION_HOME/wp-content/uploads
 
 # create service
-local soureWPContent=$APPLICATION_HOME/wp-content
-local destiWpContent=/usr/src/wordpress
+soureWPContent=$APPLICATION_HOME/wp-content
+destiWpContent=/usr/src/wordpress
 docker service create \
     --env WORDPRESS_DOMAIN_PROTO=$WORDPRESS_DOMAIN_PROTO \
     --env WORDPRESS_MYSQL_DB=$WORDPRESS_MYSQL_DB \
@@ -89,7 +91,7 @@ cat $HERE/http-wordpress.conf \
 
 docker service update \
     --env-add UPDATE=$(date +%s.%N) \
-    --mount-rm /etc/nginx/conf.d/$APPLICATION_TLD_SSL.conf
+    --mount-rm /etc/nginx/conf.d/$APPLICATION_TLD_SSL.conf \
     --mount-rm $destiWpContent/wp-content/uploads \
     --mount-rm $destiWpContent/wp-content/themes \
     --mount-rm $destiWpContent \
@@ -99,13 +101,16 @@ sleep 5
 
 docker service update \
     --env-add UPDATE=$(date +%s.%N) \
-    --mount type=bind,source=$NGINX_CONFIG_HOME/$APPLICATION_TLD_SSL.conf,destination=/etc/nginx/conf.d/$APPLICATION_TLD_SSL.conf \
+    --mount-add type=bind,source=$NGINX_CONFIG_HOME/$APPLICATION_TLD_SSL.conf,destination=/etc/nginx/conf.d/$APPLICATION_TLD_SSL.conf \
     --mount-add type=volume,source=$APPLICATION_CODEX_NAME,destination=$destiWpContent \
     --mount-add type=bind,source=$soureWPContent/themes,destination=$destiWpContent/wp-content/themes \
     --mount-add type=bind,source=$soureWPContent/uploads,destination=$destiWpContent/wp-content/uploads \
     $APPLICATION_NGINX_NAME
 
-
+# bash $HERE/global-nginx-proxy.sh
+docker service update \
+    --env-add UPDATE=$(date +%s.%N) \
+    $NGINX_PROXY_NAME
 
 
 
