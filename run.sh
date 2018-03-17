@@ -39,6 +39,8 @@ mkdir -p $JENKINS_HOME/.ssh, $JENKINS_HOME/ssl;
 cp /etc/letsencrypt/live/itmcd.ro/* $JENKINS_HOME/ssl;
 openssl rsa -in $JENKINS_HOME/ssl/privkey.pem -out $JENKINS_HOME/ssl/privkey-rsa.pem;
 
+WITH_SSL="-e JENKINS_OPTS='--httpPort=-1 --httpsPort=8080 --httpsCertificate=/var/jenkins_home/ssl/fullchain.pem --httpsPrivateKey=/var/jenkins_home/ssl/privkey.pem'"
+
 [ -f $JENKINS_HOME/.ssh/id_rsa ] || ssh-keygen -b 2048 -t rsa -f $JENKINS_HOME/.ssh/id_rsa -q -N ""
 
 chown -R 1000:1000 $JENKINS_HOME
@@ -47,7 +49,7 @@ chown -R 1000:1000 $JENKINS_HOME
 docker run -p $((8000 + $(date +%d | sed -e "s/^0\+//g") + $(date +%m | sed -e "s/^0\+//g"))):8080 \
   --restart=always \
   -e JENKINS_INSTALL_PLUGINS='simple-theme-plugin publish-over-ssh' \
-  -e JENKINS_OPTS='--httpPort=-1 --httpsPort=8080 --httpsCertificate=/var/jenkins_home/ssl/fullchain.pem --httpsPrivateKey=/var/jenkins_home/ssl/privkey.pem' \
+  $WITH_SSL \
   -v $JENKINS_HOME:/var/jenkins_home \
   -v /var/run/docker.sock:/run/docker.sock \
   --name jenkins -d qubestash/jenkins:latest
