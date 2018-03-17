@@ -44,6 +44,8 @@ chown -R 1000:1000 $JENKINS_HOME
 docker run -p $((8000 + $(date +%d | sed -e "s/^0\+//g") + $(date +%m | sed -e "s/^0\+//g"))):8080 \
   --restart=always \
   -e JENKINS_INSTALL_PLUGINS='simple-theme-plugin publish-over-ssh' \
+  -e JENKINS_OPTS='--httpPort=-1 --httpsPort=8080 --httpsCertificate=/var/lib/jenkins/ssl --httpsPrivateKey=/var/lib/jenkins/ssl'
+  -v /etc/letsencrypt/live/itmcd.ro:/var/lib/jenkins/ssl
   -v $JENKINS_HOME:/var/jenkins_home \
   -v /var/run/docker.sock:/run/docker.sock \
   --name jenkins -d qubestash/jenkins:latest
