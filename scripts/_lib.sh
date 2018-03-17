@@ -30,7 +30,20 @@ NGINX_CONFIG_BASE=${APPLICATION_NGINX_CONF:-http-html.conf}
 
 NGINX_PROXY_CONFIG_HOME=${NGINX_PROXY_CONFIG_HOME:-$HERE/data/http/nginx-proxy}
 
+#
+# Test whether a php-fpm container has properly started.
+#
+php-fpm::test-running(){
+    docker ps -a | grep -v Exited | egrep "$1\.[0-9]+" > /dev/null || echo 1
 
+    docker ps -a | grep -v Exited \
+        | egrep "$1\.[0-9]+" | awk -F" " '{print $NF}' \
+        | while read container; do
+            docker logs $container 2>&1 | grep "NOTICE: fpm is running" > /dev/null || echo 2
+        done
+
+    echo 0
+}
 
 # ###################################################################################################
 # # Abstract; Copy this to start new apps
@@ -323,17 +336,4 @@ NGINX_PROXY_CONFIG_HOME=${NGINX_PROXY_CONFIG_HOME:-$HERE/data/http/nginx-proxy}
 #         > $NGINX_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
 # }
 
-# #
-# # Test whether a php-fpm container has properly started.
-# #
-# php-fpm::test-running(){
-#     docker ps -a | grep -v Exited | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" > /dev/null || echo 1
 
-#     docker ps -a | grep -v Exited \
-#         | egrep "$DOCKER_SERVICE_NAME\.[0-9]+" | awk -F" " '{print $NF}' \
-#         | while read container; do
-#             docker logs $container 2>&1 | grep "NOTICE: fpm is running" > /dev/null || echo 2
-#         done
-
-#     echo 0
-# }
