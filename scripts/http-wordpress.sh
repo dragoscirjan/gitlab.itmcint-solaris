@@ -101,6 +101,7 @@ sleep 5
 
 docker service update \
     --env-add UPDATE=$(date +%s.%N) \
+    --mount-add /etc/nginx/conf.d/$APPLICATION_TLD_SSL.conf \
     --mount-add type=bind,source=$NGINX_CONFIG_HOME/$APPLICATION_TLD_SSL.conf,destination=/etc/nginx/conf.d/$APPLICATION_TLD_SSL.conf \
     --mount-add type=volume,source=$APPLICATION_CODEX_NAME,destination=$destiWpContent \
     --mount-add type=bind,source=$soureWPContent/themes,destination=$destiWpContent/wp-content/themes \
