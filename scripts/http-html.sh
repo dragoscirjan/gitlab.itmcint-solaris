@@ -41,4 +41,4 @@ cat $HERE/global-nginx-proxy-https-only.conf \
 # bash $HERE/global-nginx-proxy.sh
 docker service update \
     --env-add UPDATE=$(date +%s.%N) \
-    $NGINX_PROXY_NAME
+    $APPLICATION_NGINX_PROXY_NAME
