@@ -26,6 +26,8 @@ bash $HERE/http-html.sh
 
 docker service rm $APPLICATION_CODEX_NAME || true
 
+sleep 5
+
 docker volume rm $APPLICATION_CODEX_NAME || true
 
 sleep 5
@@ -88,20 +90,8 @@ cat $HERE/http-wordpress.conf \
     > $NGINX_CONFIG_HOME/$APPLICATION_TLD_SSL.conf
 
 # update nginx
-
 docker service update \
     --env-add UPDATE=$(date +%s.%N) \
-    --mount-rm /etc/nginx/conf.d/$APPLICATION_TLD_SSL.conf \
-    --mount-rm $destiWpContent/wp-content/uploads \
-    --mount-rm $destiWpContent/wp-content/themes \
-    --mount-rm $destiWpContent \
-    $APPLICATION_NGINX_NAME
-
-sleep 5
-
-docker service update \
-    --env-add UPDATE=$(date +%s.%N) \
-    --mount-add /etc/nginx/conf.d/$APPLICATION_TLD_SSL.conf \
     --mount-add type=bind,source=$NGINX_CONFIG_HOME/$APPLICATION_TLD_SSL.conf,destination=/etc/nginx/conf.d/$APPLICATION_TLD_SSL.conf \
     --mount-add type=volume,source=$APPLICATION_CODEX_NAME,destination=$destiWpContent \
     --mount-add type=bind,source=$soureWPContent/themes,destination=$destiWpContent/wp-content/themes \
@@ -112,64 +102,3 @@ docker service update \
 docker service update \
     --env-add UPDATE=$(date +%s.%N) \
     $APPLICATION_NGINX_PROXY_NAME
-
-
-
-
-# DOCKER_SERVICE_NAME=${DOCKER_SERVICE_NAME:-wordpress}
-# DOCKER_HOSTNAME=${DOCKER_HOSTNAME:-wordpress.local}
-
-# DOCKER_LOG_OPTIONS=${DOCKER_LOG_OPTIONS:- --log-driver json-file --log-opt max-size=10m --log-opt max-file=3}
-# 
-# DOCKER_REPLICAS=${DOCKER_REPLICAS:-1}
-
-# MYSQL_HOME=${MYSQL_HOME:-$HERE/mysql}
-# MYSQL_LIB_HOME=${MYSQL_LIB_HOME:-$HERE/mysql/lib}
-
-# APPLICATION_TLD=${APPLICATION_TLD:-wordpress.local}
-
-# docker-ip() {
-#     docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' \
-#         $(docker ps -a | grep $DOCKER_SERVICE_NAME\. | cut -f1 -d' ');
-# }
-
-# APPLICATION_HOME=${APPLICATION_HOME:-$HERE/data/sites/$DOCKER_HOSTNAME}
-
-# NGINX_HOME=${NGINX_HOME:-$HERE/data/http/nginx}
-# NGINX_CONF=${NGINX_CONF:-http-wordpress.conf}
-# NGINX_HOME_PROXY=${NGINX_HOME_PROXY:-$HERE/data/http/nginx-proxy}
-
-
-
-# #
-# # remove directive
-# #
-# if echo $* | grep "remove"; then
-#     wordpress::remove
-# fi
-# if echo $* | grep "remove-only"; then
-#     exit 0
-# fi
-
-# #
-# # create / update
-# #
-# if docker service ls | grep $DOCKER_SERVICE_NAME; then
-#     wordpress::update
-# else
-#     wordpress::create
-# fi;
-
-# sleep 20
-
-# docker service ls
-# docker service inspect --pretty $DOCKER_SERVICE_NAME
-# docker service ps $DOCKER_SERVICE_NAME
-
-# # sleep 20
-
-# # docker service ls
-# # docker service inspect --pretty $DOCKER_SERVICE_NAME
-# # docker service inspect --pretty global_nginx
-# # docker service ps $DOCKER_SERVICE_NAME
-# # docker service ps global_nginx
