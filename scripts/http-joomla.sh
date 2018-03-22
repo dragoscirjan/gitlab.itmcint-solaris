@@ -68,7 +68,7 @@ docker ps -a | grep $APPLICATION_CODEX_NAME
 
 # determine whether php-fpm was loaded properly, or wait for it ...
 while [ "$(php-fpm::test-running $APPLICATION_CODEX_NAME)" != "0" ]; do
-    echo "Waiting for Wordpress & php-fpm to start";
+    echo "Waiting for Joomla & php-fpm to start";
     sleep 10
 done
 
