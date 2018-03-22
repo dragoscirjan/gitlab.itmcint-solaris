@@ -73,7 +73,7 @@ while [ "$(php-fpm::test-running $APPLICATION_CODEX_NAME)" != "0" ]; do
 done
 
 # configure application config
-cat $HERE/http-wordpress.conf \
+cat $HERE/http-joomla.conf \
     | sed -e "s/domain.local/$APPLICATION_TLD/g" \
     | sed -e "s/php.local/$APPLICATION_CODEX_NAME/g" \
     | sed -e "s|__ROOT__|/usr/src/joomla|g" \
