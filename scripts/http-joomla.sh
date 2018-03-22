@@ -25,15 +25,8 @@ docker service rm $APPLICATION_CODEX_NAME || true
 
 sleep 5
 
-docker volume rm $APPLICATION_CODEX_NAME || true
-
-sleep 5
-
 # pull image
 docker pull $DOCKER_CODEX_IMAGE
-
-# create volume
-docker volume create --name $APPLICATION_CODEX_NAME
 
 soureJContent=$APPLICATION_HOME
 destiJContent=/usr/src/joomla
@@ -76,14 +69,14 @@ done
 cat $HERE/http-joomla.conf \
     | sed -e "s/domain.local/$APPLICATION_TLD/g" \
     | sed -e "s/php.local/$APPLICATION_CODEX_NAME/g" \
-    | sed -e "s|__ROOT__|/usr/src/joomla|g" \
+    | sed -e "s|__ROOT__|$destiJContent|g" \
     > $NGINX_CONFIG_HOME/$APPLICATION_TLD_SSL.conf
 
 # update nginx
 docker service update \
     --env-add UPDATE=$(date +%s.%N) \
     --mount-add type=bind,source=$NGINX_CONFIG_HOME/$APPLICATION_TLD_SSL.conf,destination=/etc/nginx/conf.d/$APPLICATION_TLD_SSL.conf \
-    --mount-add type=volume,source=$APPLICATION_CODEX_NAME,destination=$destiJContent \
+    --mount-add type=bind,source=$soureJContent,destination=$destiJContent \
     $APPLICATION_NGINX_NAME
 
 # bash $HERE/global-nginx-proxy.sh

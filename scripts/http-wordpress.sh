@@ -86,7 +86,7 @@ done
 cat $HERE/http-wordpress.conf \
     | sed -e "s/domain.local/$APPLICATION_TLD/g" \
     | sed -e "s/php.local/$APPLICATION_CODEX_NAME/g" \
-    | sed -e "s|__ROOT__|/usr/src/wordpress|g" \
+    | sed -e "s|__ROOT__|$destiWpContent|g" \
     > $NGINX_CONFIG_HOME/$APPLICATION_TLD_SSL.conf
 
 # update nginx
