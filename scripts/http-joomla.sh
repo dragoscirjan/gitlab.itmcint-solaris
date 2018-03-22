@@ -56,7 +56,7 @@ docker service create \
     --mount type=bind,source=/etc/localtime,destination=/etc/localtime \
     --replicas $DOCKER_CODEX_REPLICAS \
     $DOCKER_LOG_OPTIONS \
-    $DOCKER_ADDITIONAL_CREATE \
+    $DOCKER_CODEX_ADDITIONAL_CREATE \
     $DOCKER_CODEX_IMAGE
 
 sleep 5 

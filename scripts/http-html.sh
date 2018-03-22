@@ -21,7 +21,7 @@ docker service create \
     --network web-network \
     --replicas $DOCKER_NGINX_REPLICAS \
     $DOCKER_LOG_OPTIONS \
-    $DOCKER_ADDITIONAL_CREATE \
+    $DOCKER_NGINX_ADDITIONAL_CREATE \
     --name $APPLICATION_NGINX_NAME \
     $DOCKER_NGINX_IMAGE
 

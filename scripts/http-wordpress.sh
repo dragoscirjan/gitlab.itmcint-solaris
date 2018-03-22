@@ -66,7 +66,7 @@ docker service create \
     --mount type=bind,source=$soureWPContent/uploads,destination=$destiWpContent/wp-content/uploads \
     --replicas $DOCKER_CODEX_REPLICAS \
     $DOCKER_LOG_OPTIONS \
-    $DOCKER_ADDITIONAL_CREATE \
+    $DOCKER_CODEX_ADDITIONAL_CREATE \
     $DOCKER_CODEX_IMAGE
 
 sleep 5 
