@@ -34,7 +34,7 @@ if echo $* | grep "publish"; then
 	export DOCKER_ADDITIONAL_CREATE="$DOCKER_ADDITIONAL_CREATE --publish 80:80 --publish 443:443"
 fi
 
-docker service rm -f $APPLICATION_NGINX_PROXY_NAME || true
+docker service rm $APPLICATION_NGINX_PROXY_NAME || true
 
 sleep 5
 
