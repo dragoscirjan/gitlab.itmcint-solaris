@@ -64,6 +64,7 @@ docker service create \
     --mount type=volume,source=$APPLICATION_CODEX_NAME,destination=$destiWpContent \
     --mount type=bind,source=$soureWPContent/themes,destination=$destiWpContent/wp-content/themes \
     --mount type=bind,source=$soureWPContent/uploads,destination=$destiWpContent/wp-content/uploads \
+    --mount type=bind,source=$soureWPContent/wflogs,destination=$destiWpContent/wp-content/wflogs \
     --replicas $DOCKER_CODEX_REPLICAS \
     $DOCKER_LOG_OPTIONS \
     $DOCKER_CODEX_ADDITIONAL_CREATE \
@@ -96,7 +97,6 @@ docker service update \
     --mount-add type=volume,source=$APPLICATION_CODEX_NAME,destination=$destiWpContent \
     --mount-add type=bind,source=$soureWPContent/themes,destination=$destiWpContent/wp-content/themes \
     --mount-add type=bind,source=$soureWPContent/uploads,destination=$destiWpContent/wp-content/uploads \
-    --mount-add type=bind,source=$soureWPContent/wflogs,destination=$destiWpContent/wp-content/wflogs \
     $APPLICATION_NGINX_NAME
 
 # bash $HERE/global-nginx-proxy.sh
