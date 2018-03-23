@@ -40,6 +40,8 @@ docker volume create --name $APPLICATION_CODEX_NAME
 
 mkdir -p $APPLICATION_HOME/wp-content/plugins $APPLICATION_HOME/wp-content/themes $APPLICATION_HOME/wp-content/uploads $APPLICATION_HOME/wp-content/wflogs
 
+#    --mount type=bind,source=$soureWPContent/wflogs,destination=$destiWpContent/wp-content/wflogs \
+
 # create service
 soureWPContent=$APPLICATION_HOME/wp-content
 destiWpContent=/usr/src/wordpress
@@ -64,7 +66,6 @@ docker service create \
     --mount type=volume,source=$APPLICATION_CODEX_NAME,destination=$destiWpContent \
     --mount type=bind,source=$soureWPContent/themes,destination=$destiWpContent/wp-content/themes \
     --mount type=bind,source=$soureWPContent/uploads,destination=$destiWpContent/wp-content/uploads \
-    --mount type=bind,source=$soureWPContent/wflogs,destination=$destiWpContent/wp-content/wflogs \
     --replicas $DOCKER_CODEX_REPLICAS \
     $DOCKER_LOG_OPTIONS \
     $DOCKER_CODEX_ADDITIONAL_CREATE \
