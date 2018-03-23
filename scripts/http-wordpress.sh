@@ -38,7 +38,7 @@ docker pull $DOCKER_CODEX_IMAGE
 # create volume
 docker volume create --name $APPLICATION_CODEX_NAME
 
-mkdir -p $APPLICATION_HOME/wp-content/plugins $APPLICATION_HOME/wp-content/themes $APPLICATION_HOME/wp-content/uploads
+mkdir -p $APPLICATION_HOME/wp-content/plugins $APPLICATION_HOME/wp-content/themes $APPLICATION_HOME/wp-content/uploads $APPLICATION_HOME/wp-content/wflogs
 
 # create service
 soureWPContent=$APPLICATION_HOME/wp-content
@@ -96,6 +96,7 @@ docker service update \
     --mount-add type=volume,source=$APPLICATION_CODEX_NAME,destination=$destiWpContent \
     --mount-add type=bind,source=$soureWPContent/themes,destination=$destiWpContent/wp-content/themes \
     --mount-add type=bind,source=$soureWPContent/uploads,destination=$destiWpContent/wp-content/uploads \
+    --mount-add type=bind,source=$soureWPContent/wflogs,destination=$destiWpContent/wp-content/wflogs \
     $APPLICATION_NGINX_NAME
 
 # bash $HERE/global-nginx-proxy.sh
