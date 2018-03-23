@@ -12,6 +12,8 @@ HERE="`dirname "$WRAPPER"`"
 # @link https://docs.docker.com/engine/reference/commandline/service_inspect/
 #
 
+DOCKER_CODEX_IMAGE=${DOCKER_CODEX_IMAGE:-php:fpm-alpine}
+
 JOOMLA_MYSQL_DB=${JOOMLA_MYSQL_DB:-database}
 JOOMLA_MYSQL_USER=${JOOMLA_MYSQL_USER:-user}
 JOOMLA_MYSQL_PASS=${JOOMLA_MYSQL_PASS:-pass}
