@@ -28,7 +28,7 @@ punctart.ro www.punctart.ro
 # Dragos Cirjan
 # "lunaticthinker.me"
 # IT Media Connect
-itmcd.ro dragosc.itmcd.ro www.dragosc.itmcd.ro syrius.itmcd.ro www.syrius.itmcd.ro www.itmcd.ro
+itmcd.ro dragosc.itmcd.ro www.dragosc.itmcd.ro galatea.itmcd.ro www.galatea.itmcd.ro syrius.itmcd.ro www.syrius.itmcd.ro www.itmcd.ro
 DOMAINS
 
 cat $DOMAIN_FILE | grep -v "#" | while read DOMAIN; do
