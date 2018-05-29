@@ -17,16 +17,8 @@ arthouselucrezia.ro www.arthouselucrezia.ro
 hyperliteratura.ro www.hyperliteratura.ro
 # Stefan Mitran
 casacontelui.ro www.casacontelui.ro
-confort-morosanu.ro www.confort-morosanu.ro
-karizma.ro www.karizma.ro
-tninvest.ro www.tninvest.ro
-# Ionut Caragea
-aslrq.ro www.aslrq.ro
-ionutcaragea.ro www.ionutcaragea.ro
-# Punct Art
-punctart.ro www.punctart.ro
 # Dragos Cirjan
-# "lunaticthinker.me"
+# lunaticthinker.me
 # IT Media Connect
 itmcd.ro dragosc.itmcd.ro www.dragosc.itmcd.ro galatea.itmcd.ro www.galatea.itmcd.ro syrius.itmcd.ro www.syrius.itmcd.ro www.itmcd.ro
 DOMAINS
