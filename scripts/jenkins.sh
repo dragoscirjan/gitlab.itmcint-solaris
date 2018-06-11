@@ -1,4 +1,5 @@
 #! /bin/bash
+set -xe
 
 which java || apt-get update && apt-get install -y openjdk-8-jdk openjdk-8-jre
 
