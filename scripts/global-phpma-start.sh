@@ -26,7 +26,7 @@ if echo $* | grep "remove"; then
     docker service rm $DOCKER_SERVICE_NAME
 fi
 
-(sleep 120 && docker service rm $DOCKER_SERVICE_NAME) &
+(sleep 3600 && docker service rm $DOCKER_SERVICE_NAME) &
 
 #
 # stop if re-run
