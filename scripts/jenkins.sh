@@ -2,7 +2,7 @@
 
 which java || apt-get update && apt-get install -y openjdk-8-jdk openjdk-8-jre
 
-[ -f /opt/jenkinks.war ] || curl -SL http://mirrors.jenkins.io/war/latest/jenkins.war > /opt/jenkins.war
+[ -f /opt/jenkins.war ] || curl -SL http://mirrors.jenkins.io/war/latest/jenkins.war > /opt/jenkins.war
 
 USER=${USER:-jenkins}
 
