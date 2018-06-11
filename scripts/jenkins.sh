@@ -28,6 +28,6 @@ chown -R $JENKINS_USER:$JENKINS_USER $JENKINS_HOME $JENKINS_LOG
 
 su -s /bin/sh jenkins \
     -c "exec setsid /usr/bin/java -jar $JENKINS_WAR $JENKINS_OPTS </dev/null >>$JENKINS_LOG/console_log 2>&1 & \
-echo \$! >$JENKINS_PID; \
-disown \$(cat $JENKINS_PID) \
+echo \$! >$JENKINS_PID \
+disown \$! \
 "
