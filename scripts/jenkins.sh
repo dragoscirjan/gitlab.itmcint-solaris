@@ -2,7 +2,9 @@
 
 which java || apt-get update && apt-get install -y openjdk-8-jdk openjdk-8-jre
 
-[ -f /opt/jenkins.war ] || curl -SL http://mirrors.jenkins.io/war/latest/jenkins.war > /opt/jenkins.war
+JENKINS_WAR=${JENKINS_WAR:-/opt/jenkins.war}
+
+[ -f $JENKINS_WAR ] || curl -SL http://mirrors.jenkins.io/war/latest/jenkins.war > $JENKINS_WAR
 
 USER=${USER:-jenkins}
 
@@ -23,7 +25,7 @@ chown -R $USER:$USER $JENKINS_HOME
 [ -f $JENKINS_PID ] && [ "$(cat $JENKINS_PID)" != "" ] && kill -s 9 $(cat $JENKINS_PID)
 
 su -s /bin/sh jenkins -c "\
-    exec setsid /usr/bin/java -jar /opt/jenkins.war \
+    exec setsid /usr/bin/java -jar $JENKINS_WAR \
 		$JENKINS_OPTS \
     </dev/null >> /var/log/jenkins/console_log 2>&1 & \
     echo \$! >$JENKINS_PID \
