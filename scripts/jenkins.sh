@@ -12,16 +12,20 @@ cat /etc/passwd | grep $USER || (
 )
 
 JENKINS_HOME=${JENKINS_HOME:-/var/lib/jenkins}
+JENKINS_PID=${JENKINS_PID:-/var/run/jenkins.pid}
 
-touch /var/run/jenkins.pid
-chown $USER:$USER /var/run/jenkins.pid
+touch $JENKINS_PID
+chown $USER:$USER $JENKINS_PID
 
-[ -f /var/run/jenkins.pid ] && [ "$(cat /var/run/jenkins.pid)" != "" ] && kill -s 9 $(cat /var/run/jenkins.pid)
+mkdir -p $JENKINS_HOME
+chown -R $USER:$USER $JENKINS_HOME
+
+[ -f $JENKINS_PID ] && [ "$(cat $JENKINS_PID)" != "" ] && kill -s 9 $(cat $JENKINS_PID)
 
 su -s /bin/sh jenkins -c "\
     exec setsid /usr/bin/java -jar /opt/jenkins.war \
 		$JENKINS_OPTS \
     </dev/null >> /var/log/jenkins/console_log 2>&1 & \
-    echo \$! >/var/run/jenkins.pid \
+    echo \$! >$JENKINS_PID \
     disown \$! \
 "
