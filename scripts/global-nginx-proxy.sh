@@ -23,11 +23,6 @@ NGINX_HOME_SSL=${NGINX_HOME_SSL:-$HERE/data/http/ssl};
 mkdir -p $NGINX_HOME $NGINX_HOME_SSL $NGINX_HOME_QUBE $NGINX_HOME_CERTBOT;
 
 if echo $* | grep "dev"; then
-	export DOCKER_ADDITIONAL_UPDATE=" \
-		$DOCKER_ADDITIONAL_UPDATE \
-		--mount-add type=bind,source=/home/dragosc/Workspace/QubeStash/http-nginx/scripts/nginx-certbot,destination=/nginx-certbot \
-		--env-add NGINX_DEBUG=no \
-	"
 	export DOCKER_ADDITIONAL_CREATE=" \
 		$DOCKER_ADDITIONAL_CREATE \
 		--mount type=bind,source=/home/dragosc/Workspace/QubeStash/http-nginx/scripts/nginx-certbot,destination=/nginx-certbot \
@@ -35,30 +30,38 @@ if echo $* | grep "dev"; then
 	"
 fi
 
-if echo $* | grep "publish"; then
-	export DOCKER_ADDITIONAL_CREATE="$DOCKER_ADDITIONAL_CREATE --publish 80:80 --publish 443:443"
-	export DOCKER_ADDITIONAL_UPDATE="$DOCKER_ADDITIONAL_UPDATE --publish 80:80 --publish 443:443"
-fi
+docker service rm $APPLICATION_NGINX_PROXY_NAME || true
 
-#
-# remove directive
-#
-if echo $* | grep "remove"; then
-    nginx-proxy::remove
-fi
-if echo $* | grep "remove-only"; then
-    exit 0
-fi
+sleep 5
 
-#
-# create/update
-#
-if docker service ls | grep $DOCKER_SERVICE_NAME; then
-    nginx-proxy::update
-else
-    nginx-proxy::create
-fi
+# pull image
+docker pull $DOCKER_IMAGE
 
-sleep 20;
+# generate ssl
+openssl req -subj '/CN=qubestash.org/O=QubeStash ORG./C=RO' \
+    -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout $NGINX_HOME_SSL/qubestash.key \
+    -out $NGINX_HOME_SSL/qubestash.crt
 
-# nginx-proxy::info
+# DOCKER_ADDITIONAL_CREATE="--publish 80:80";
+docker service create \
+    --env NGINX_CERTBOT_EMAIL="office@itmediaconnect.ro" \
+    --hostname $DOCKER_HOSTNAME \
+    --mount type=bind,source=$NGINX_HOME,destination=/etc/nginx/conf.d \
+    --mount type=bind,source=$NGINX_HOME_CERTBOT,destination=/etc/letsencrypt \
+    --mount type=bind,source=$NGINX_HOME_QUBE,destination=/var/qubestash \
+    --mount type=bind,source=$NGINX_HOME_SSL,destination=/etc/nginx/ssl \
+    --name $APPLICATION_NGINX_PROXY_NAME \
+    --network web-network \
+    --replicas $DOCKER_REPLICAS \
+    $DOCKER_LOG_OPTIONS \
+    $DOCKER_ADDITIONAL_CREATE \
+    $DOCKER_IMAGE;
+
+sleep 5;
+
+docker service ls | egrep "$APPLICATION_NGINX_PROXY_NAME"
+docker service inspect --pretty $APPLICATION_NGINX_PROXY_NAME;
+docker service ps $APPLICATION_NGINX_PROXY_NAME;
+docker ps -a | grep -v Exited | egrep "$APPLICATION_NGINX_PROXY_NAME\.[0-9]+"
+docker ps -a | grep Exited | egrep "$APPLICATION_NGINX_PROXY_NAME\.[0-9]+" || true

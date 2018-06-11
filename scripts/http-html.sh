@@ -4,51 +4,41 @@ set -xe;
 export WRAPPER="`readlink -f "$0"`"
 HERE="`dirname "$WRAPPER"`"
 
+. $HERE/_init.sh
+
 #
 # @link https://docs.docker.com/engine/reference/commandline/service_create/
 # @link https://docs.docker.com/engine/reference/commandline/service_update/
 # @link https://docs.docker.com/engine/reference/commandline/service_inspect/
 #
 
-DOCKER_SERVICE_NAME=${DOCKER_SERVICE_NAME:-global_nginx}
+docker service rm $APPLICATION_NGINX_NAME || true
 
-. $HERE/_init.sh
+docker service create \
+    --hostname $APPLICATION_NGINX_NAME \
+    --mount type=bind,source=$NGINX_CONFIG_HOME/default.conf,destination=/etc/nginx/conf.d/default.conf \
+    --mount type=bind,source=$APPLICATION_HOME,destination=/usr/share/nginx/html \
+    --network web-network \
+    --replicas $DOCKER_NGINX_REPLICAS \
+    $DOCKER_LOG_OPTIONS \
+    $DOCKER_NGINX_ADDITIONAL_CREATE \
+    --name $APPLICATION_NGINX_NAME \
+    $DOCKER_NGINX_IMAGE
 
-if [ "$APPLICATION_HOME" = "" ] || [ "$APPLICATION_TLD" = "" ]; then
-	echo "One of the following are not set: "
-	echo "APPLICATION_HOME=$APPLICATION_HOME"
-	echo "APPLICATION_TLD=$APPLICATION_TLD"
-	exit 1
-fi
-
-NGINX_HOME=${NGINX_HOME:-$HERE/data/http/nginx}
-NGINX_CONF=http-html.conf
-NGINX_HOME_PROXY=${NGINX_HOME_PROXY:-$HERE/data/http/nginx-proxy}
-
-# ensure application folder exists
-mkdir -p $APPLICATION_HOME
-
-#
-# remove directive
-#
-if echo $* | grep "remove"; then
-    http-html::remove
-fi
-if echo $* | grep "remove-only"; then
-    exit 0
-fi
-
-#
-# create / update
-#
-# if docker service ls | grep $DOCKER_SERVICE_NAME; then
-    http-html::update
-# else
-#     http-html::create
-# fi;
-
-sleep 20
+sleep 5 
 
 docker service ls
-docker service inspect --pretty $DOCKER_SERVICE_NAME
-docker service ps $DOCKER_SERVICE_NAME
+docker service inspect --pretty $APPLICATION_NGINX_NAME
+docker service ps $APPLICATION_NGINX_NAME
+docker ps -a | grep $APPLICATION_NGINX_NAME
+
+cat $HERE/global-nginx-proxy-https-only.conf \
+	| sed -e "s/localhost/$APPLICATION_TLD/g" \
+	| sed -e "s/domain.local/$APPLICATION_TLD_SSL/g" \
+	| sed -e "s/global_nginx/$APPLICATION_NGINX_NAME/g" \
+	> $NGINX_PROXY_CONFIG_HOME/$(echo $APPLICATION_TLD | cut -f1 -d' ').conf
+
+# bash $HERE/global-nginx-proxy.sh
+docker service update \
+    --env-add UPDATE=$(date +%s.%N) \
+    $APPLICATION_NGINX_PROXY_NAME

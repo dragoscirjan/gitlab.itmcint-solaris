@@ -6,28 +6,21 @@ sleep 10
 docker ps -a | grep global_nginx-proxy && exit 100
 
 #CERTBOT_DEV_OPTIONS="--dry-run --quiet"
-CERTBOT_OPTIONS="--force-renewal --standalone --agree-tos $CERTBOT_DEV_OPTIONS --email office@itmediaconnect.ro"
+CERTBOT_OPTIONS="--non-interactive --force-renewal --standalone --agree-tos $CERTBOT_DEV_OPTIONS --email office@itmediaconnect.ro"
 
 DOMAIN_FILE="/tmp/domains.txt"
 
 cat > $DOMAIN_FILE <<DOMAINS
 # Andrei Ruse
-arthouselucrezia.ro
-hyperliteratura.ro
+andreiruse.ro www.andreiruse.ro
+arthouselucrezia.ro www.arthouselucrezia.ro
+hyperliteratura.ro www.hyperliteratura.ro
 # Stefan Mitran
-casacontelui.ro
-confort-morosanu.ro
-karizma.ro
-tninvest.ro
-# Ionut Caragea
-aslrq.ro
-ionutcaragea.ro
-# Punct Art
-punctart.ro
+casacontelui.ro www.casacontelui.ro
 # Dragos Cirjan
-# "lunaticthinker.me"
+# lunaticthinker.me
 # IT Media Connect
-itmcd.ro dragosc.itmcd.ro www.dragosc.itmcd.ro syrius.itmcd.ro www.syrius.itmcd.ro www.itmcd.ro
+itmcd.ro dragosc.itmcd.ro www.dragosc.itmcd.ro galatea.itmcd.ro www.galatea.itmcd.ro syrius.itmcd.ro www.syrius.itmcd.ro www.itmcd.ro
 DOMAINS
 
 cat $DOMAIN_FILE | grep -v "#" | while read DOMAIN; do
