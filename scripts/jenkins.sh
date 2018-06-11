@@ -23,7 +23,7 @@ chown $JENKINS_USER:$JENKINS_USER $JENKINS_PID
 mkdir -p $JENKINS_HOME $JENKINS_LOG
 chown -R $JENKINS_USER:$JENKINS_USER $JENKINS_HOME $JENKINS_LOG
 
-[ -f $JENKINS_PID ] && [ "$(cat $JENKINS_PID)" != "" ] && kill -s 9 $(cat $JENKINS_PID)
+# [ -f $JENKINS_PID ] && [ "$(cat $JENKINS_PID)" != "" ] && kill -s 9 $(cat $JENKINS_PID)
 
 su -s /bin/sh jenkins -c "\
     exec setsid /usr/bin/java -jar $JENKINS_WAR \
