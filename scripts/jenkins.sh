@@ -16,6 +16,7 @@ cat /etc/passwd | grep $JENKINS_USER || (
 
 export JENKINS_HOME=${JENKINS_HOME:-/var/lib/jenkins}
 JENKINS_LOG=${JENKINS_LOG:-/var/log/jenkins}
+JENKINS_LOG_CLI=${JENKINS_LOG_CLI:-/dev/null}
 JENKINS_PID=${JENKINS_PID:-/var/run/jenkins.pid}
 
 touch $JENKINS_PID
@@ -26,8 +27,8 @@ chown -R $JENKINS_USER:$JENKINS_USER $JENKINS_HOME $JENKINS_LOG
 
 # [ -f $JENKINS_PID ] && [ "$(cat $JENKINS_PID)" != "" ] && kill -s 9 $(cat $JENKINS_PID)
 
-su -s /bin/sh jenkins \
-    -c "exec setsid /usr/bin/java -jar $JENKINS_WAR $JENKINS_OPTS </dev/null >>$JENKINS_LOG/console_log 2>&1 & \
+su -s /bin/sh $JENKINS_USER \
+    -c "exec setsid /usr/bin/java -jar $JENKINS_WAR $JENKINS_OPTS </dev/null >>$JENKINS_LOG_CLI 2>&1 & \
 echo \$! >$JENKINS_PID \
 disown \$! \
 "
