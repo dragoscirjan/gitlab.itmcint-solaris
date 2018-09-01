@@ -1,6 +1,0 @@
----
-  #  Test if the correct linux image is installed
-  - shell: 'dpkg -l | grep linux-image-extra-$(uname -r)'
-    register: grep
-
-  - debug: var=grep  

@@ -1,0 +1,9 @@
+#! /bin/bash
+
+mkdir -p ./roles/$1
+
+for f in files handlers meta templates tasks vars; do
+    # echo "Creating ./roles/$1/$f"
+    mkdir -p ./roles/$1/$f;
+    touch ./roles/$1/$f/.$f
+done

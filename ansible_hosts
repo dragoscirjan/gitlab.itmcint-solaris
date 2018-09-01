@@ -1,0 +1,12 @@
+[syrius]
+syrius.itmcd.ro
+
+[tiamat]
+tiamat.itmcd.ro
+
+[local]
+127.0.0.1
+
+[global]
+syrius.itmcd.ro
+tiamat.itmcd.ro
