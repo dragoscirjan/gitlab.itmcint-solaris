@@ -1,16 +1,17 @@
 #! /bin/bash
 
-docker service rm global_nginx-proxy || true
-sleep 10
+HOSTNAME=$(hostname)
 
-docker ps -a | grep global_nginx-proxy && exit 100
+[ $HOSTNAME != 'tiamat' ] && ( docker service rm global_nginx-proxy || true ) && sleep 10
+
+[ $HOSTNAME != 'tiamat' ] && ( docker ps -a | grep global_nginx-proxy && exit 100 )
 
 #CERTBOT_DEV_OPTIONS="--dry-run --quiet"
 CERTBOT_OPTIONS="--non-interactive --force-renewal --standalone --agree-tos $CERTBOT_DEV_OPTIONS --email office@itmediaconnect.ro"
 
 DOMAIN_FILE="/tmp/domains.txt"
 
-cat > $DOMAIN_FILE <<DOMAINS
+[ $HOSTNAME != 'tiamat' ] && cat > $DOMAIN_FILE <<DOMAINS
 # Andrei Ruse
 andreiruse.ro www.andreiruse.ro
 arthouselucrezia.ro www.arthouselucrezia.ro
@@ -23,15 +24,19 @@ casacontelui.ro www.casacontelui.ro
 itmcd.ro dragosc.itmcd.ro www.dragosc.itmcd.ro galatea.itmcd.ro www.galatea.itmcd.ro syrius.itmcd.ro www.syrius.itmcd.ro www.itmcd.ro
 DOMAINS
 
+[ $HOSTNAME == 'tiamat' ] && cat > $DOMAIN_FILE <<DOMAINS
+tiamat.itmcd.ro
+DOMAINS
+
 cat $DOMAIN_FILE | grep -v "#" | while read DOMAIN; do
 	DOMAIN1=$(echo $DOMAIN | awk -F' ' '{print $1}')
     # @see https://certbot.eff.org/docs/using.html#id17
     
     CERTBOT_COMMAND="certbot certonly $CERTBOT_OPTIONS --cert-name $DOMAIN1 -d $(echo $DOMAIN | sed -e 's/ /,/g')"
-	echo $CERTBOT_COMMAND
+    echo $CERTBOT_COMMAND
     $CERTBOT_COMMAND
     
-    for SUBDOMAIN in $DOMAIN; do
+    [ $HOSTNAME != 'tiamat' ] &&  for SUBDOMAIN in $DOMAIN; do
     	echo "$SUBDOMAIN"
     	if [ -f /data/http/nginx-proxy/$SUBDOMAIN.conf ]; then
         	CHAIN=$(find /etc/letsencrypt/live/ -type l -or -type f | grep $DOMAIN1 | grep chain | tail -n 1)
@@ -46,6 +51,8 @@ cat $DOMAIN_FILE | grep -v "#" | while read DOMAIN; do
         fi
 	done
 done
+
+[ $HOSTNAME == 'tiamat' ] && exit 0
 
 JENKINS_PORT=$((8000 + $(date +%d | sed -e "s/^0\+//g") + $(date +%m | sed -e "s/^0\+//g")))
 JENKINS_DOMAIN=syrius.itmcd.ro:$JENKINS_PORT
