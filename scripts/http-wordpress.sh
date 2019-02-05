@@ -89,12 +89,12 @@ cat $HERE/http-wordpress.conf \
     | sed -e "s/domain.local/$APPLICATION_TLD/g" \
     | sed -e "s/php.local/$APPLICATION_CODEX_NAME/g" \
     | sed -e "s|__ROOT__|$destiWpContent|g" \
-    > $NGINX_CONFIG_HOME/$APPLICATION_TLD_SSL.conf
+    > $NGINX_CONFIG_HOME/$APPLICATION_TLD.conf
 
 # update nginx
 docker service update \
     --env-add UPDATE=$(date +%s.%N) \
-    --mount-add type=bind,source=$NGINX_CONFIG_HOME/$APPLICATION_TLD_SSL.conf,destination=/etc/nginx/conf.d/$APPLICATION_TLD_SSL.conf \
+    --mount-add type=bind,source=$NGINX_CONFIG_HOME/$APPLICATION_TLD.conf,destination=/etc/nginx/conf.d/$APPLICATION_TLD.conf \
     --mount-add type=volume,source=$APPLICATION_CODEX_NAME,destination=$destiWpContent \
     --mount-add type=bind,source=$soureWPContent/themes,destination=$destiWpContent/wp-content/themes \
     --mount-add type=bind,source=$soureWPContent/uploads,destination=$destiWpContent/wp-content/uploads \

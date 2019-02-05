@@ -21,7 +21,7 @@ casacontelui.ro www.casacontelui.ro
 # Dragos Cirjan
 # lunaticthinker.me
 # IT Media Connect
-itmcd.ro dragosc.itmcd.ro www.dragosc.itmcd.ro galatea.itmcd.ro www.galatea.itmcd.ro syrius.itmcd.ro www.syrius.itmcd.ro www.itmcd.ro
+itmcd.ro ageless-clinic.itmcd.ro dragosc.itmcd.ro www.dragosc.itmcd.ro galatea.itmcd.ro www.galatea.itmcd.ro syrius.itmcd.ro www.syrius.itmcd.ro www.itmcd.ro
 DOMAINS
 
 [ $HOSTNAME == 'tiamat' ] && cat > $DOMAIN_FILE <<DOMAINS
