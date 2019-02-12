@@ -54,11 +54,11 @@ done
 
 [ $HOSTNAME == 'tiamat' ] && exit 0
 
-JENKINS_PORT=$((8000 + $(date +%d | sed -e "s/^0\+//g") + $(date +%m | sed -e "s/^0\+//g")))
-JENKINS_DOMAIN=syrius.itmcd.ro:$JENKINS_PORT
-JENKINS_USER=dragosc
-JENKINS_TOKEN=8620e5d374438e39893955a29642163c
-JENKINS_PROJECT_NAME=SYRIUS_NGINX_PROXY
-JENKINS_PROJECT_TOKEN=SYRIUS_NGINX_PROXY
-JENKINS_CRUMB=$(curl -s "http://$JENKINS_USER:$JENKINS_TOKEN@$JENKINS_DOMAIN/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)")
-curl -X POST -H "$JENKINS_CRUMB" http://$JENKINS_USER:$JENKINS_TOKEN@$JENKINS_DOMAIN/job/$JENKINS_PROJECT_NAME/build?token=$JENKINS_PROJECT_TOKEN
+# JENKINS_PORT=$((8000 + $(date +%d | sed -e "s/^0\+//g") + $(date +%m | sed -e "s/^0\+//g")))
+# JENKINS_DOMAIN=syrius.itmcd.ro:$JENKINS_PORT
+# JENKINS_USER=dragosc
+# JENKINS_TOKEN=8620e5d374438e39893955a29642163c
+# JENKINS_PROJECT_NAME=SYRIUS_NGINX_PROXY
+# JENKINS_PROJECT_TOKEN=SYRIUS_NGINX_PROXY
+# JENKINS_CRUMB=$(curl -s "http://$JENKINS_USER:$JENKINS_TOKEN@$JENKINS_DOMAIN/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)")
+# curl -X POST -H "$JENKINS_CRUMB" http://$JENKINS_USER:$JENKINS_TOKEN@$JENKINS_DOMAIN/job/$JENKINS_PROJECT_NAME/build?token=$JENKINS_PROJECT_TOKEN
