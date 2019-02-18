@@ -2,7 +2,7 @@
 
 HOSTNAME=$(hostname)
 
-[ $HOSTNAME != 'tiamat' ] && ( docker service rm global_nginx-proxy || true ) && sleep 10
+# [ $HOSTNAME != 'tiamat' ] && ( docker service rm global_nginx-proxy || true ) && sleep 10
 
 [ $HOSTNAME != 'tiamat' ] && ( docker ps -a | grep global_nginx-proxy && exit 100 )
 
