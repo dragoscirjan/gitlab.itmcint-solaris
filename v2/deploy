@@ -1,0 +1,13 @@
+#! /bin/bash
+
+# 1. Code Deploy
+# 1.1. Deploy Code where required
+# 1.2. Create additional folders
+# 
+# 2. Raise Machines based on their type
+# 2.1 Read machines config folder
+# 2.2 For each machine file
+# 2.2.1 Raise Machine
+# 2.2.2 Test whether machine is functional
+# 2.2.3 If not functional, stop deploy and erase everything until
+# 2.3 Move to next machine until all is good

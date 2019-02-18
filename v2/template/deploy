@@ -1,0 +1,10 @@
+#! /bin/bash
+
+source ../../bin/activate
+
+CONFIG_VALUE="value"
+
+[ -f .env ] && ([ "$(cat .env)" = "prod" ] || [ "$(cat .env)" = "stage" ]) && {}
+
+[ -f .env ] && [ "$(cat .env)" = "prod" ] && {}
+

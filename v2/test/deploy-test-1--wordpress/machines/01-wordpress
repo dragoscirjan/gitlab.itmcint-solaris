@@ -1,0 +1,9 @@
+#! /bin/bash
+
+LOCAL_PATH=$(dirname `readlink -f $0`) 
+
+MACHINE_TYPE=wordpress
+MACHINE_NAME=wordpress_name
+MACHINE_MOUNTS=(
+	""
+)

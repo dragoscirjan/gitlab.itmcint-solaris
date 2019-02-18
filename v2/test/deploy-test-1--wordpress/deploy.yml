@@ -1,0 +1,5 @@
+version: 1
+deploy:
+	project: "Wordpress Test Deploy"
+	git: null
+	machines

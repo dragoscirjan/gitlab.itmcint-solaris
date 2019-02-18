@@ -1,0 +1,25 @@
+#! /bin/bash
+
+[ "$INIT_EXISTS" = "1" ] || {
+	LOCAL_PATH=$(dirname `readlink -f $0`)
+	source $LOCAL_PATH/../init
+}
+
+[ -f $LIB_PATH/machine/adapter/$MACHINE_ADAPTER ] || ( echo "> ERROR '$LIB_PATH/machine/adapter/$MACHINE_ADAPTER' adapter does not exist." && exit 1 )
+[ -f $LIB_PATH/machine/adapter/$MACHINE_ADAPTER ] && source $LIB_PATH/machine/adapter/$MACHINE_ADAPTER
+
+
+MACHINE_NGINX_DEFAULT_CONFIG_MOUNT="$MACHINE_NGINX_DEFAULT_CONFIG:"
+
+#
+#
+#
+Nginx::attemptConfig() {
+	[ -f  ]
+}
+
+#
+# 
+#
+Nginx::attemptCreate() {}
+
