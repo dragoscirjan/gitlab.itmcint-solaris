@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  solaris-config:
+    image: python:3.5-alpine
+    command: sh -c "pip install jinja2 pyyaml;
+      python /solaris/config/compile.py;"
+    container_name: solaris_config
+    volumes:
+      - solaris-certbot-1:/solaris/certbot
+      - ./config:/solaris/config
+      - ./solaris:/solaris/config/solaris
+
+  solaris-certbot:
+    image: certbot/certbot
+    command: sh -c "while [ ! -f /solaris/certbot/certbot.sh ]; do 
+              echo 'Waiting for -f /solaris/certbot/certbot.sh...';
+              sleep 1;
+            done;
+            cat /solaris/certbot/certbot.sh;
+            rm -rf /solaris/certbot/certbot.sh;
+            tail -f /dev/null"
+    container_name: solaris_certbot
+    depends_on: 
+      - solaris-config
+    entrypoint: ""
+    environment:
+      CERTBOT_ENV: dev
+    volumes:
+      - solaris-certbot-1:/solaris/certbot
+
+# # solaris-proxy:
+# #   image: nginx:alpine
+# #   container_name: solaris-proxy
+# #   volumes:
+# #     - solaris-nginx-confd-1:/etc/nginx/conf.d
+  
+
+volumes:
+  solaris-certbot-1:
+  solaris-nginx-confd-1:

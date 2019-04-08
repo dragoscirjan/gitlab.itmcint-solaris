@@ -1,0 +1,18 @@
+#! /bin/sh
+set -xe
+
+#CERTBOT_DEV_OPTIONS="--dry-run --quiet"
+CERTBOT_OPTIONS="--non-interactive --force-renewal --standalone --agree-tos $CERTBOT_DEV_OPTIONS --email office@itmediaconnect.ro"
+CERT_PATH=/etc/letsencrypt/live
+
+{% for project in projects %}
+
+expDate=`date -d "$(openssl x509 -in $CERT_PATH/{{ project.domain }}/cert.pem -inform PEM -noout -enddate | awk -F'=' '{{ '{' }} print $2 {{ '}' }}')" '+%s'`
+nowDate=$(date '+%s')
+diffDays=$(( ($expDate - $nowDate)/(60*60*24) ))
+
+if [ $diffDays -lt 10 ]; then
+    certbot certonly $CERTBOT_OPTIONS --cert-name {{ project.domain }} {% if project.domains %}-d {{ project.domains }} {% endif %}
+fi
+
+{% endfor %}

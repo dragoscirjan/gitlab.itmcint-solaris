@@ -6,6 +6,15 @@ export WRAPPER="`readlink -f "$0"`"
 LIB_PATH="`dirname "$WRAPPER"`"
 
 MACHINE_ADAPTER="swarm"
-
-
 MACHINE_NGINX_DEFAULT_CONFIG="$LIB_PATH/config/nginx.conf"
+
+[ "$CONFIG_PATH" == "" ] && CONFIG_PATH=$LIB_PATH/../solaris.conf
+
+tr -d '\r' < $CONFIG_PATH > $CONFIG_PATH.unix
+
+cat $CONFIG_PATH.unix | while read -r l; do
+	# echo 'export $name="$value"'
+	echo 1;
+done
+
+echo $SOLARIS_CERTIFICATE_ADAPTER
