@@ -23,7 +23,7 @@ casacontelui.ro www.casacontelui.ro
 # IT Media Connect
 itmcd.ro ageless-clinic.itmcd.ro dragosc.itmcd.ro www.dragosc.itmcd.ro galatea.itmcd.ro www.galatea.itmcd.ro syrius.itmcd.ro www.syrius.itmcd.ro www.itmcd.ro
 # Ghada
-ageless-clinic.ro
+ageless-clinic.ro www.ageless-clinic.ro
 DOMAINS
 
 [ $HOSTNAME == 'tiamat' ] && cat > $DOMAIN_FILE <<DOMAINS
@@ -34,7 +34,9 @@ cat $DOMAIN_FILE | grep -v "#" | while read DOMAIN; do
 	DOMAIN1=$(echo $DOMAIN | awk -F' ' '{print $1}')
     # @see https://certbot.eff.org/docs/using.html#id17
     
-    CERTBOT_COMMAND="certbot certonly $CERTBOT_OPTIONS --cert-name $DOMAIN1 -d $(echo $DOMAIN | sed -e 's/ /,/g')"
+    # CERTBOT_COMMAND="certbot certonly $CERTBOT_OPTIONS --cert-name $DOMAIN1 -d $(echo $DOMAIN | sed -e 's/ /,/g')"
+    DOCKER_COMMAND="docker run --rm -p 80:80 -it -v /etc/letsencrypt:/etc/letsencrypt certbot/certbot"
+    CERTBOT_COMMAND="$DOCKER_COMMAND certonly $CERTBOT_OPTIONS --cert-name $DOMAIN1 -d $(echo $DOMAIN | sed -e 's/ /,/g')"
     echo $CERTBOT_COMMAND
     $CERTBOT_COMMAND
     
