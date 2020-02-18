@@ -1,0 +1,37 @@
+# demo1.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo1
+spec:
+  ports:
+  - port: 80
+    targetPort: 5678
+    # targetPort: 3000
+  selector:
+    app: demo1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo1
+spec:
+  selector:
+    matchLabels:
+      app: demo1
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: demo1
+    spec:
+      containers:
+      - name: demo1
+        image: hashicorp/http-echo
+        # image: express-demo
+        # imagePullPolicy: Never
+        args:
+        - "-text=demo1"
+        ports:
+        - containerPort: 5678
+        # - containerPort: 3000

@@ -1,36 +1,35 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
-
-# Supporting LXC, Virtualbox and Libvirt (KVM/Qemu)
-#
-# Boxes:
-# @link https://github.com/boxcutter (for Virtualbox images)
-# @link https://github.com/dragosc (for LXC images)
-#
-# Plugins:
-# @link https://github.com/fgrehm/vagrant-lxc
-# @link https://github.com/pradels/vagrant-libvirt#create-box (for Libvirt images)
-# @link https://github.com/sciurus/vagrant-mutate
-
 Vagrant.configure(2) do |config|
 
-  config.vm.define :ubuntu do |ubuntu|
-    # --provider lxc
-    ubuntu.vm.provider :lxc do |lxc, override|
-      lxc.container_name = 'solaris'
-      # lxc.customize "network.ipv4", "10.0.3.101/24"
-      lxc.customize 'aa_profile', 'unconfined'
-      lxc.customize 'cap.drop', nil
-      override.vm.box = "dragosc/xenial64"
-    end
+  (1..2).each do |i|
+    config.vm.define "k8s#{i}" do |s|
+      s.ssh.forward_agent = true
+      s.vm.box = "ubuntu/bionic64"
+      if i == 1
+        s.vm.hostname = "k8smaster"
+      else
+        s.vm.hostname = "k8snode#{i}"
+      end
 
-    # --provider virtualbox
-    ubuntu.vm.provider :virtualbox do |virtualbox, override|
-      override.vm.network "private_network", ip: "192.168.50.101"
-      override.vm.box = "ubuntu/xenial64" # 16.04
+      # s.vm.network "private_network", ip: "192.168.56.10#{i}", netmask: "255.255.255.0", auto_config: true, virtualbox__intnet: "k8s-net"
+      s.vm.network "public_network", ip: "192.168.1.23#{i}", netmask: "255.255.255.0", auto_config: true, bridge: "enp6s0"
+      s.vm.provider "virtualbox" do |v|
+        v.name = "k8s#{i}"
+        v.cpus = 2
+        v.memory = 3072
+        v.gui = false
+      end
+
+      s.vm.provision "shell", inline: <<-SCRIPT
+apt-get update
+apt-get install -y git make
+SCRIPT
+
+      # if i == 1
+      #   s.vm.provision :shell, path: "scripts/bootstrap_master.sh"
+      # else
+      #   s.vm.provision :shell, path: "scripts/bootstrap_worker.sh"
+      # end
     end
   end
-
-  config.vm.provision :shell, inline: "bash /vagrant/run.sh"
 
 end

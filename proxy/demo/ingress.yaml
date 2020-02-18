@@ -1,0 +1,21 @@
+# demo_ingress.yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: demo-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"    
+spec:
+  rules:
+  - host: demo1.yourdomain.com
+    http:
+      paths:
+      - backend:
+          serviceName: demo1
+          servicePort: 80
+  - host: demo2.yourdomain.com
+    http:
+      paths:
+      - backend:
+          serviceName: demo2
+          servicePort: 80
