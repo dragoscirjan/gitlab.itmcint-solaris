@@ -22,6 +22,14 @@ Vagrant.configure(2) do |config|
       s.vm.provision "shell", inline: <<-SCRIPT
 apt-get update
 apt-get install -y git make
+
+git clone https://github.com/dragoscirjan/configs
+cd configs/docker
+make i
+
+usermod -G docker vagrant
+
+make ki
 SCRIPT
 
       # if i == 1

@@ -4,43 +4,43 @@ include Makefile.template
 # Actual Action Definitions
 #
 
+INGRESS_NGINX_URL = https://github.com/nginxinc/kubernetes-ingress/raw/master/deployments
 
-init: ## (1) Init Nginx 
-	@# https://dev.to/chrisme/setting-up-nginx-ingress-w-automatically-generated-letsencrypt-certificates-on-kubernetes-4f1k
-	
-	kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml
-	kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/cloud-generic.yaml
+init-nginx-ingress: ## Init Ingress (NginxInc) https://www.youtube.com/user/vipinwipl007/videos
+	# 1 https://docs.nginx.com/nginx-ingress-controller/installation/installation-with-manifests/#configure-rbac
+	kubectl apply -f $(INGRESS_NGINX_URL)/common/ns-and-sa.yaml
+	kubectl apply -f $(INGRESS_NGINX_URL)/rbac/rbac.yaml
+	sleep 5
+	# 2 https://docs.nginx.com/nginx-ingress-controller/installation/installation-with-manifests/#create-the-default-secret-customization-configmap-and-custom-resource-definitions
+	kubectl apply -f $(INGRESS_NGINX_URL)/common/default-server-secret.yaml
+	kubectl apply -f $(INGRESS_NGINX_URL)/common/nginx-config.yaml
+	kubectl apply -f $(INGRESS_NGINX_URL)/common/custom-resource-definitions.yaml
+	sleep 5
+	# 3 https://docs.nginx.com/nginx-ingress-controller/installation/installation-with-manifests/#deploy-the-ingress-controller
+	kubectl apply -f $(INGRESS_NGINX_URL)/daemon-set/nginx-ingress.yaml
+	kubectl apply -f $(INGRESS_NGINX_URL)/daemon-set/nginx-ingress.yaml
+	sleep 5
+	kubectl get pods --namespace=nginx-ingress
+	# 4 https://docs.nginx.com/nginx-ingress-controller/installation/installation-with-manifests/#get-access-to-the-ingress-controller
+	kubectl apply -f $(INGRESS_NGINX_URL)/service/nodeport.yaml
+	sleep 5
+	kubectl apply -f $(INGRESS_NGINX_URL)/common/nginx-config.yaml
+	sleep 5
+	kubectl get all --all-namespaces
+
+INGRESS_K8S_URL = https://raw.githubusercontent.com/kubernetes/ingress-nginx/master
+
+init-k8s-ingress: ## Init Ingress (Kubernetes) https://bit.ly/2SI7uKP
+	kubectl apply -f $(INGRESS_K8S_URL)/deploy/static/mandatory.yaml
+	kubectl apply -f $(INGRESS_K8S_URL)/deploy/static/provider/cloud-generic.yaml
 	sleep 5
 	kubectl apply -f Service_ingress-nginx.yaml
 	sleep 5
-	kubectl get -n ingress-nginx service
-	kubectl get pods -o wide --all-namespaces
+	kubectl get all --all-namespaces
 
-cert-manager: ## Install & Configure Certificate Manager
-	kubectl create namespace cert-manager
-	kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.13.0/cert-manager.yaml
+delete-k8s-ingress: ## Delete Ingress (Kubernetes)
+	kubectl delete -f Service_ingress-nginx.yaml
+	kubectl delete -f $(INGRESS_K8S_URL)/deploy/static/provider/cloud-generic.yaml
+	kubectl delete -f $(INGRESS_K8S_URL)/deploy/static/mandatory.yaml
 	sleep 5
-	kubectl get pods --namespace cert-manager
-	sleep 5
-	kubectl apply -f ca/test.yaml
-	kubectl describe certificate -n cert-manager-test
-	sleep 5
-	kubectl delete -f ca/test.yaml
-
-init-demo: ## Echo Demo
-	kubectl apply -f demo/demo1.yaml
-	kubectl apply -f demo/demo2.yaml
-	sleep 5
-	kubectl get service
-	kubectl get pods -o wide --all-namespaces
-	sleep 5
-
-	kubectl apply -f demo/ingress.yaml
-	sleep 5
-	kubectl get service
-	kubectl get pods -o wide --all-namespaces
-
-delete-demo:
-	kubectl delete -f demo/ingress.yaml
-	kubectl delete -f demo/demo1.yaml
-	kubectl delete -f demo/demo2.yaml
+	kubectl get all --all-namespaces

@@ -14,8 +14,8 @@ spec:
   # it has to be 'Cluster' for now
   # externalTrafficPolicy: Local
   externalTrafficPolicy: Cluster
-  # externalIPs:
-  # - 192.168.1.231
+  externalIPs:
+  - 192.168.1.231
   type: LoadBalancer
   selector:
     app.kubernetes.io/name: ingress-nginx
