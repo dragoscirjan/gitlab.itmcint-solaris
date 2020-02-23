@@ -3,7 +3,9 @@ Vagrant.configure(2) do |config|
   (1..2).each do |i|
     config.vm.define "k8s#{i}" do |s|
       s.ssh.forward_agent = true
-      s.vm.box = "ubuntu/bionic64"
+      # s.vm.box = "ubuntu/bionic64"
+      s.vm.box = "debian/stretch64"
+      s.vm.box_version = "9.9.0"
       if i == 1
         s.vm.hostname = "k8smaster"
       else
@@ -18,6 +20,8 @@ Vagrant.configure(2) do |config|
         v.memory = 3072
         v.gui = false
       end
+
+      s.vm.synced_folder ".", "/vagrant"
 
       s.vm.provision "shell", inline: <<-SCRIPT
 apt-get update
