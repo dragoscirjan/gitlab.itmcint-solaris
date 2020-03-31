@@ -56,7 +56,7 @@ endif
 .PHONY: help
 help:
 ifeq ($(SHELL_IS),bash)
-	@for f in $(MAKEFILE_LIST); do  grep -E '^[a-zA-Z_-]+:.*?## .*$$' $$f | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'; done
+	@for f in $(MAKEFILE_LIST); do  grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $$f | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'; done
 else
 	@$(POWERSHELL) "Select-String -Path $(MAKEFILE_LIST) -Pattern '^[a-zA-Z_-]+:.*?## .*$$' | Foreach-Object { $$tag = $$_.Matches[0].Value.split(':')[0]; $$explain = $$_.Matches[0].Value.split('#')[2]; Write-Host $$tag.PadRight(30, ' ') -ForegroundColor Cyan -NoNewline; Write-Host $$explain; }"
 endif
