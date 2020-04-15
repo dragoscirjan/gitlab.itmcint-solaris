@@ -5,7 +5,7 @@ Vagrant.configure(2) do |config|
       s.ssh.forward_agent = true
       # s.vm.box = "ubuntu/bionic64"
       s.vm.box = "debian/stretch64"
-      s.vm.box_version = "9.9.0"
+      s.vm.box_version = "9.4.0"
       if i == 1
         s.vm.hostname = "k8smaster"
       else
@@ -24,16 +24,19 @@ Vagrant.configure(2) do |config|
       s.vm.synced_folder ".", "/vagrant"
 
       s.vm.provision "shell", inline: <<-SCRIPT
+
+echo "192.168.1.23#{i} #{s.vm.hostname} #{s.vm.hostname}" >> /etc/hosts
+
 apt-get update
 apt-get install -y git make
 
 git clone https://github.com/dragoscirjan/configs
-cd configs/docker
-make i
+# cd configs/docker
+# make i
 
-usermod -G docker vagrant
+# usermod -G docker vagrant
 
-make ki
+# make ki
 SCRIPT
 
       # if i == 1

@@ -7,11 +7,15 @@ OSARCH :=
 OSID :=
 ifeq ($(OS),Windows_NT)
 	OSFLAG = WIN32
-	ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
+	UNAME_P = $(shell powershell -ExecutionPolicy ByPass "(Get-WmiObject Win32_OperatingSystem).OSArchitecture")
+	ifeq ($(UNAME_P),64-bit)
 		OSARCH = AMD64
-	endif
-	ifeq ($(PROCESSOR_ARCHITECTURE),x86)
-		OSARCH = IA32
+	else
+		ifeq ($(UNAME_P),32-bit)
+			OSARCH = IA32
+		else
+			OSARCH = ARM
+		endif
 	endif
 else
 	UNAME_S := $(shell uname -s)
@@ -44,6 +48,7 @@ else ifeq ($(SHELL),/usr/bin/bash)
     SHELL_IS = bash
 else ifeq ($(SHELL),/bin/sh)
 	SHELL_IS = bash
+# TODO: The following ifeq should dissapear
 else ifeq ($(SHELL),C:/Program Files/Git/usr/bin/sh.exe)
 	SHELL_IS = bash
 else
@@ -58,7 +63,7 @@ help:
 ifeq ($(SHELL_IS),bash)
 	@for f in $(MAKEFILE_LIST); do  grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $$f | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'; done
 else
-	@$(POWERSHELL) "Select-String -Path $(MAKEFILE_LIST) -Pattern '^[a-zA-Z_-]+:.*?## .*$$' | Foreach-Object { $$tag = $$_.Matches[0].Value.split(':')[0]; $$explain = $$_.Matches[0].Value.split('#')[2]; Write-Host $$tag.PadRight(30, ' ') -ForegroundColor Cyan -NoNewline; Write-Host $$explain; }"
+	@$(POWERSHELL) -Command "'$(MAKEFILE_LIST)'.Split() | ForEach { if ($$_) { Select-String -Path $$_ -Pattern '^[a-zA-Z_-]+:.*?## .*$$' | Foreach-Object { $$tag = $$_.Matches[0].Value.split(':')[0]; $$explain = $$_.Matches[0].Value.split('#')[2]; Write-Host $$tag.PadRight(30, ' ') -ForegroundColor Cyan -NoNewline; Write-Host $$explain; } } }"
 endif
 .DEFAULT_GOAL := help
 
@@ -80,3 +85,14 @@ NOT_IMPLEMENTED_WINDOWS = "Not implemented under Windows"
 # Actual Action Definitions
 #
 
+APTGET = sudo apt-get
+
+#
+# Possible Required Hooks
+#
+
+rootcheck:
+	@echo "Need root to run." && [ "$$(whoami)" = "root" ]
+
+norootcheck:
+	@echo "Don't need root to run." && [ "$$(whoami)" != "root" ]
