@@ -239,20 +239,22 @@ spec:
           volumeMounts:
             - mountPath: /var/www/html
               name: hello-wp-shared-files
+            - mountPath: /etc/wp
+              name: hello-wp-configs
+              readOnly: true
+          # lifecycle:
+          #   postStart:
+          #     exec:
+          #       command: ["/bin/sh", "-c", "cp -r /etc/wp/wp-config.php /var/www/html && chown www-data:www-data /var/www/html/wp-config.php"]
         - image: nginx:latest
           imagePullPolicy: Always
           name: nginx
           volumeMounts:
-            - mountPath: /etc/nginx/conf.d/default.conf
+            - mountPath: /etc/nginx/conf.d
               name: hello-wp-configs
-              subPath: default.conf
               readOnly: true
             - mountPath: /var/www/html
               name: hello-wp-shared-files
-            - mountPath: /var/www/html/wp-config.php
-              subPath: wp-config.php
-              name: hello-wp-configs
-              readOnly: true
       volumes:
         - configMap:
             defaultMode: 256
