@@ -1,0 +1,16 @@
+# ---
+# # Ingress
+# apiVersion: extensions/v1beta1
+# kind: Ingress
+# metadata:
+#   name: hello-wp-ingress
+#   annotations:
+#     kubernetes.io/ingress.class: "nginx"    
+# spec:
+#   rules:
+#   - host: hyperliteratura.ro
+#     http:
+#       paths:
+#       - backend:
+#           serviceName: hello-wp-service
+#           servicePort: 80
