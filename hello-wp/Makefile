@@ -10,10 +10,11 @@ _root_check:
 SOLARIS_ENV=production
 
 init: ## Init Hello World
-	kubectl apply -f hello-world.yaml
+	kubectl apply -f hello-wp-php-fpm.yaml
 ifneq ($(SOLARIS_ENV),production)
-	kubectl apply -f hello-world-dev.yaml
+	kubectl apply -f hello-wp-php-fpm-dev.yaml
 endif
 
 delete: ## Delete Hello World
+	kubectl apply -f hello-wp-php-fpm-dev.yaml || true
 	kubectl delete -f hello-world.yaml

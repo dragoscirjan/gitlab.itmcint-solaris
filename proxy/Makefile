@@ -30,8 +30,6 @@ init-nginx-ingress: ## Init Ingress (NginxInc) https://www.youtube.com/user/vipi
 	kubectl apply -f $(INGRESS_NGINX_YAML_PATH)/service/nodeport.yaml
 	sleep 5
 	kubectl apply -f $(INGRESS_NGINX_YAML_PATH)/common/nginx-config.yaml
-	sleep 5
-	kubectl get all --all-namespaces
 
 delete-nginx-ingress: ## Delete Ingress (NginxInc)
 	kubectl delete namespace nginx-ingress
@@ -43,21 +41,16 @@ INGRESS_K8S_URL = https://github.com/kubernetes/ingress-nginx
 INGRESS_K8S_VERSION = nginx-0.29.0
 
 init-k8s-ingress: ## Init Ingress (Kubernetes) https://bit.ly/2SI7uKP
+	rm -rf ./ingress-nginx
 	git clone --single-branch --branch $(INGRESS_K8S_VERSION)  $(INGRESS_K8S_URL)
 
 	kubectl apply -f $(INGRESS_K8S_YAML_PATH)/deploy/static/mandatory.yaml
 	kubectl apply -f $(INGRESS_K8S_YAML_PATH)/deploy/static/provider/cloud-generic.yaml
-	# sleep 5
-	# kubectl apply -f Service_ingress-nginx.yaml
-	sleep 5
-	kubectl get all --all-namespaces
 
 delete-k8s-ingress: ## Delete Ingress (Kubernetes)
 	# kubectl delete -f Service_ingress-nginx.yaml
 	kubectl delete -f $(INGRESS_K8S_YAML_PATH)/deploy/static/provider/cloud-generic.yaml
 	kubectl delete -f $(INGRESS_K8S_YAML_PATH)/deploy/static/mandatory.yaml
-	sleep 5
-	kubectl get all --all-namespaces
 
 init-demo: ## Init Ingress Demo
 	kubectl apply -f demo/demo1.yaml
