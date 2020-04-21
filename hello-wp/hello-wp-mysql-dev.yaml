@@ -1,3 +1,8 @@
+# mainly => https://gist.github.com/serainville/b55635a5f808e7d12397fd81ca860d44
+# wttf =>  https://cloud.netapp.com/blog/how-to-set-up-mysql-kubernetes-deployments
+# wtf => https://www.serverlab.ca/tutorials/containers/kubernetes/how-to-run-wordpress-and-mysql-5-7-on-kubernetes/
+# kubecon => https://www.youtube.com/watch?v=J7h0F34iBx0
+
 ---
 apiVersion: v1
 kind: Secret
